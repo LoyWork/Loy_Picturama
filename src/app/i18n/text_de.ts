@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: 'Foto ansehen',
     Picture_select: 'Auswählen',
     Picture_deselect: 'Abwählen',
+    Picture_addFavorite: "Zu Favoriten hinzufügen",
+    Picture_removeFavorite: "Aus Favoriten entfernen",
     Picture_error_createThumbnail: 'Konnte Vorschaubild nicht erstellen',
+
+    PictureMenu_copyImage: "Bild kopieren",
+    PictureMenu_moveToTrash: "In den Papierkorb verschieben",
+    PictureMenu_deleteFromDisk: "Von der Festplatte löschen",
+    PictureMenu_showInFolder: "Enthaltenden Ordner öffnen",
+
+    PhotoDelete_confirmDisk_one: "Dieses Foto in den Papierkorb des Betriebssystems verschieben und aus der Bibliothek entfernen?",
+    PhotoDelete_confirmDisk_more: "{0} Fotos in den Papierkorb des Betriebssystems verschieben und aus der Bibliothek entfernen?",
 
     PhotoActionButtons_movedToTrash_one: 'Foto wurde in den Papierkorb gelegt',
     PhotoActionButtons_movedToTrash_more: '{0} Fotos wurden in den Papierkorb gelegt',

@@ -10,7 +10,7 @@ import {
     FETCH_PHOTO_FOLDERS,
     FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
     FETCH_SECTION_PHOTOS, FORGET_SECTION_PHOTOS,
-    CHANGE_PHOTOWORK, CHANGE_PHOTOS, EMPTY_TRASH, SET_SHOW_INFO, SET_INFO_PHOTO_DATA,
+    CHANGE_PHOTOWORK, CHANGE_PHOTOS, DELETE_PHOTOS, EMPTY_TRASH, SET_SHOW_INFO, SET_INFO_PHOTO_DATA,
     SET_IMPORT_PROGRESS, FETCH_TAGS, SET_PHOTO_TAGS,
     OPEN_EXPORT, CLOSE_EXPORT, SET_EXPORT_OPTIONS,
     TOGGLE_SHOW_EXPORT_REMOVE_INFO_DESC, SET_EXPORT_PROGRESS
@@ -45,6 +45,7 @@ export const fetchSectionPhotosAction = (sectionIds: PhotoSectionId[], photoSets
 export const forgetSectionPhotosAction = (sectionIds: { [index: string]: true }) => action(FORGET_SECTION_PHOTOS, { sectionIds })
 export const changePhotoWorkAction = (photoId: PhotoId, photoWork: PhotoWork) => action(CHANGE_PHOTOWORK, { photoId, photoWork })
 export const changePhotosAction = (photos: Photo[], update: Partial<Photo>) => action(CHANGE_PHOTOS, { photos, update })
+export const deletePhotosAction = (photoIds: PhotoId[]) => action(DELETE_PHOTOS, { photoIds })
 export const emptyTrashAction = (trashedPhotoIds: PhotoId[]) => action(EMPTY_TRASH, { trashedPhotoIds })
 
 export const setShowInfoAction = (view: 'library' | 'detail', showInfo: boolean) => action(SET_SHOW_INFO, { view, showInfo })

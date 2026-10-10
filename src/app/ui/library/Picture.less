@@ -98,14 +98,27 @@
     }
 }
 
-.Picture-favorite {
+.Picture-toggleFavorite {
     left: @overlayMargin;
-    bottom: @overlayMargin;
-    transition: left @selectionDuration ease-in, bottom @selectionDuration ease-in;
+    top: @overlayMargin;
+    transition: left @selectionDuration ease-in, top @selectionDuration ease-in;
 
     .Picture.hasSelectionBorder & {
         left: @overlayMargin + @selectionBorderSize;
-        bottom: @overlayMargin + @selectionBorderSize;
+        top: @overlayMargin + @selectionBorderSize;
+    }
+
+    // A flagged photo shows a yellow star (on hover, otherwise it stays visible as the flag indicator).
+    &.isFlagged {
+        .Picture-icon {
+            color: #f5c518 !important;
+            filter: drop-shadow(0 0 4px rgba(0, 0, 0, .7));
+            background-color: transparent !important;
+        }
+
+        &:hover {
+            background-color: rgba(128, 128, 128, .2) !important;
+        }
     }
 }
 

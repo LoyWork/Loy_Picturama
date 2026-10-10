@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: 'Посмотреть фото',
     Picture_select: 'Выбрать',
     Picture_deselect: 'Отменить выбор',
+    Picture_addFavorite: "Добавить в избранное",
+    Picture_removeFavorite: "Убрать из избранного",
     Picture_error_createThumbnail: 'Сбой в создании превью',
+
+    PictureMenu_copyImage: "Копировать изображение",
+    PictureMenu_moveToTrash: "Переместить в корзину",
+    PictureMenu_deleteFromDisk: "Удалить с диска",
+    PictureMenu_showInFolder: "Открыть содержащую папку",
+
+    PhotoDelete_confirmDisk_one: "Переместить это фото в корзину операционной системы и убрать его из библиотеки?",
+    PhotoDelete_confirmDisk_more: "Переместить {0} фото в корзину операционной системы и убрать их из библиотеки?",
 
     PhotoActionButtons_movedToTrash_one: 'Фото перемещено в корзину',
     PhotoActionButtons_movedToTrash_more: '{0} фото перемещено в корзину',

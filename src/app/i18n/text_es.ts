@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: 'Ver foto',
     Picture_select: 'Seleccionar',
     Picture_deselect: 'Deseleccionar',
+    Picture_addFavorite: "Añadir a favoritos",
+    Picture_removeFavorite: "Quitar de favoritos",
     Picture_error_createThumbnail: `Falló la creación de la miniatura`,
+
+    PictureMenu_copyImage: "Copiar imagen",
+    PictureMenu_moveToTrash: "Mover a la papelera",
+    PictureMenu_deleteFromDisk: "Eliminar del disco",
+    PictureMenu_showInFolder: "Abrir la carpeta contenedora",
+
+    PhotoDelete_confirmDisk_one: "¿Mover esta foto a la papelera del sistema operativo y quitarla de la biblioteca?",
+    PhotoDelete_confirmDisk_more: "¿Mover {0} fotos a la papelera del sistema operativo y quitarlas de la biblioteca?",
 
     PhotoActionButtons_movedToTrash_one: 'Mover foto a la papelera',
     PhotoActionButtons_movedToTrash_more: 'Se han movido {0} fotos a la papelera',

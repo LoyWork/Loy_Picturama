@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: `Voir la photo`,
     Picture_select: `Sélectionner`,
     Picture_deselect: `Désélectionner`,
+    Picture_addFavorite: "Ajouter aux favoris",
+    Picture_removeFavorite: "Retirer des favoris",
     Picture_error_createThumbnail: 'La création de la miniature a échoué',
+
+    PictureMenu_copyImage: "Copier l'image",
+    PictureMenu_moveToTrash: "Déplacer vers la corbeille",
+    PictureMenu_deleteFromDisk: "Supprimer du disque",
+    PictureMenu_showInFolder: "Ouvrir le dossier contenant",
+
+    PhotoDelete_confirmDisk_one: "Déplacer cette photo vers la corbeille du système d'exploitation et la retirer de la bibliothèque ?",
+    PhotoDelete_confirmDisk_more: "Déplacer {0} photos vers la corbeille du système d'exploitation et les retirer de la bibliothèque ?",
 
     PhotoActionButtons_movedToTrash_one: 'Déplacement de la photo à la corbeille',
     PhotoActionButtons_movedToTrash_more: 'Déplacement des {0} photos à la corbeille',

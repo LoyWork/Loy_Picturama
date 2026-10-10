@@ -1,18 +1,19 @@
-# Picturama
+# Picturama (Loy fork)
 
 Digital image organizer powered by the web
 
-[![](https://picturama.github.io/assets/picturama-screenshot.jpg)](https://picturama.github.io/)
+> **Fork notice:** This is a fork of [picturama/picturama](https://github.com/picturama/picturama) —
+> all credit for the original app goes to its authors, Til Schneider and Loïc Nogues. This repository
+> extends the original with additional features and maintains its own releases.
 
 ## Download
 
-Please visit the [Picturama website](https://picturama.github.io/).
-
-**Linux:** an AppImage requires FUSE to run, but Ubuntu and Debian no longer install FUSE 2 by default.
-If it doesn't start, install it with `sudo apt install libfuse2` (on Ubuntu 24.04: `libfuse2t64`), or run
-the AppImage with `--appimage-extract-and-run`. And make sure the file is executable (`chmod +x`).
+Grab the latest Windows installer from the
+[Releases](https://github.com/LoyWork/Loy_Picturama/releases) page of this repository.
 
 ## Features
+
+Everything from the original Picturama:
 
 - Scan local files - Keep your privacy, don't upload your personal photos to a cloud service
 - Non-Destructive - The original images won't be touched (unless you purge the trash)
@@ -25,6 +26,13 @@ the AppImage with `--appimage-extract-and-run`. And make sure the file is execut
 - Favorites
 - Rotate photos
 - Delete photos
+
+Plus what this fork adds:
+
+- Folder sidebar - Browse the top-level folders of your photo directories and filter the library by folder
+- Unified filter sidebar - Photo views (all / favorites / trash), tags and folders in one place
+- Photo context menu - Copy image to clipboard, delete from library, delete from disk (moves to the
+  system trash) and open the containing folder, right from a photo
 
 ## Develop
 

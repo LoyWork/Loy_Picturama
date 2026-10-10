@@ -2,15 +2,17 @@ import React from 'react'
 import classNames from 'classnames'
 import { findDOMNode } from 'react-dom'
 import { Button, Icon } from '@blueprintjs/core'
-import { FaCheckCircle, FaRegCircle } from 'react-icons/fa'
+import { FaCheckCircle, FaRegCircle, FaStar } from 'react-icons/fa'
 
 import { PhotoId, Photo, PhotoSectionId } from 'app/CommonTypes'
 import { LibrarySelectionController } from 'app/controller/LibrarySelectionController'
+import { PhotoActionController } from 'app/controller/PhotoActionController'
 import { formatCommandLabel } from 'app/controller/HotkeyController'
 import { msg } from 'app/i18n/i18n'
 import { selectionButtonSize, toolbarHeight } from 'app/style/variables'
 import { JustifiedLayoutBox } from 'app/UITypes'
 import RedCheckCircle from 'app/ui/widget/icon/RedCheckCircle'
+import { showPhotoContextMenu } from 'app/ui/widget/PhotoContextMenu'
 import CancelablePromise, { isCancelError } from 'app/util/CancelablePromise'
 import { bindMany, getErrorCode } from 'app/util/LangUtil'
 
@@ -38,6 +40,8 @@ export interface Props {
      */
     preselected?: boolean
     librarySelectionController: LibrarySelectionController
+    photoActionController: PhotoActionController
+    isShowingTrash: boolean
     getThumbnailSrc: (photo: Photo) => string
     createThumbnail: (sectionId: PhotoSectionId, photo: Photo) => CancelablePromise<string>
     showPhotoDetails(sectionId: PhotoSectionId, photoId: PhotoId): void
@@ -60,7 +64,7 @@ export default class Picture extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props)
         bindMany(this, 'onMouseEnter', 'onMouseLeave', 'onToggleSelection', 'onSetPhotoActive', 'onShowDetails',
-            'onThumnailChange', 'onThumbnailLoad', 'onThumbnailLoadError')
+            'onContextMenu', 'onToggleFlagged', 'onThumnailChange', 'onThumbnailLoad', 'onThumbnailLoadError')
 
         this.state = {
             thumbnailSrc: this.props.getThumbnailSrc(props.photo),
@@ -167,6 +171,17 @@ export default class Picture extends React.Component<Props, State> {
         }
     }
 
+    private onContextMenu(event: React.MouseEvent) {
+        showPhotoContextMenu(this.props.photo, this.props.isShowingTrash, this.props.photoActionController, event.nativeEvent)
+    }
+
+    private onToggleFlagged(event: React.MouseEvent) {
+        const { props } = this
+        event.stopPropagation()
+        event.preventDefault()
+        props.photoActionController.setPhotosFlagged(props.photo, !props.photo.flag)
+    }
+
     private onSetPhotoActive(event: React.MouseEvent) {
         const { props } = this
         event.stopPropagation()
@@ -265,6 +280,7 @@ export default class Picture extends React.Component<Props, State> {
                 onMouseLeave={this.onMouseLeave}
                 onClick={props.inSelectionMode ? this.onToggleSelection : this.onSetPhotoActive}
                 onDoubleClick={props.inSelectionMode ? undefined : this.onShowDetails}
+                onContextMenu={this.onContextMenu}
             >
                 {state.thumbnailSrc &&
                     <img
@@ -277,10 +293,14 @@ export default class Picture extends React.Component<Props, State> {
                 {state.thumbnailError &&
                     this.renderThumbnailError()
                 }
-                {showFavorite &&
-                    <div className='Picture-overlay Picture-favorite'>
-                        <Icon iconSize={18} icon='star'/>
-                    </div>
+                {(showFavorite || (state.isHovered && props.preselected === undefined)) &&
+                    <Button
+                        className={classNames('Picture-overlay Picture-toggleFavorite', { isFlagged: showFavorite })}
+                        minimal={true}
+                        icon={<FaStar className='Picture-icon'/>}
+                        title={msg(showFavorite ? 'Picture_removeFavorite' : 'Picture_addFavorite')}
+                        onClick={this.onToggleFlagged}
+                    />
                 }
                 {state.isHovered && props.preselected === undefined &&
                     <Button className='Picture-overlay Picture-showDetails'

@@ -5,6 +5,7 @@ import { FaCheckCircle, FaRegCircle } from 'react-icons/fa'
 
 import { PhotoId, Photo, PhotoSectionId, PhotoSection, isLoadedPhotoSection } from 'app/CommonTypes'
 import { LibrarySelectionController } from 'app/controller/LibrarySelectionController'
+import { PhotoActionController } from 'app/controller/PhotoActionController'
 import { isPhotoSelectedInSection } from 'app/state/selectors'
 import { SectionPreselection, SectionSelectionState } from 'app/state/StateTypes'
 import { selectionButtonSize } from 'app/style/variables'
@@ -31,6 +32,8 @@ export interface Props {
     sectionSelection?: SectionSelectionState
     sectionPreselection?: SectionPreselection
     librarySelectionController: LibrarySelectionController
+    photoActionController: PhotoActionController
+    isShowingTrash: boolean
     getThumbnailSrc: (photo: Photo) => string
     createThumbnail: (sectionId: PhotoSectionId, photo: Photo) => CancelablePromise<string>
     showPhotoDetails(sectionId: PhotoSectionId, photoId: PhotoId): void
@@ -72,6 +75,8 @@ export default class GridSection extends React.Component<Props> {
                         isSelected={isPhotoSelectedInSection(photoId, props.sectionSelection)}
                         preselected={getPhotoPreselection(photoIndex, props.sectionPreselection)}
                         librarySelectionController={props.librarySelectionController}
+                        photoActionController={props.photoActionController}
+                        isShowingTrash={props.isShowingTrash}
                         getThumbnailSrc={props.getThumbnailSrc}
                         createThumbnail={props.createThumbnail}
                         showPhotoDetails={props.showPhotoDetails}

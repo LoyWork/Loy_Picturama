@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: `浏览图片`,
     Picture_select: `选中`,
     Picture_deselect: `取消选中`,
+    Picture_addFavorite: `加入收藏`,
+    Picture_removeFavorite: `取消收藏`,
     Picture_error_createThumbnail: '创建缩略图失败',
+
+    PictureMenu_copyImage: '复制图片',
+    PictureMenu_moveToTrash: '移到垃圾桶',
+    PictureMenu_deleteFromDisk: '从磁盘删除',
+    PictureMenu_showInFolder: '打开所在文件夹',
+
+    PhotoDelete_confirmDisk_one: '将这张照片移入系统回收站并从图库中移除?',
+    PhotoDelete_confirmDisk_more: '将 {0} 张照片移入系统回收站并从图库中移除?',
 
     PhotoActionButtons_movedToTrash_one: '已将照片移动到垃圾桶',
     PhotoActionButtons_movedToTrash_more: '移动了{0}张照片到垃圾桶',

@@ -20,7 +20,13 @@
 }
 
 .PhotoInfo-title {
-    font-size: 22px;
+    font-size: 16px;
+    font-weight: 600;
+
+    // Never shrink: the close button next to it may grow (`flex: 1 0 auto` in Toolbar.less), and a
+    // squeezed title would wrap its (CJK) characters vertically, one per line.
+    flex: 0 0 auto;
+    white-space: nowrap;
     line-height: @toolbarHeight;
 }
 

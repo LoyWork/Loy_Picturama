@@ -309,6 +309,39 @@ pub fn fetch_trashed_photos(db: &DbHandle) -> Result<Vec<TrashedPhoto>, String> 
     Ok(result)
 }
 
+/// Fetches the master paths of the given ids. Ids that are not in the library are silently skipped —
+/// the caller works with what exists. Used by the disk-delete command to resolve paths from the DB
+/// itself, so the web view never names files.
+pub fn fetch_photos_by_ids(db: &DbHandle, photo_ids: &[PhotoId]) -> Result<Vec<TrashedPhoto>, String> {
+    if photo_ids.is_empty() {
+        return Ok(vec![]);
+    }
+    let ids_csv = photo_ids
+        .iter()
+        .map(|id| id.to_string())
+        .collect::<Vec<_>>()
+        .join(",");
+    let conn = db.lock().unwrap();
+    let mut stmt = conn
+        .prepare(&format!(
+            "SELECT id, master_dir, master_filename FROM photos WHERE id IN ({})",
+            ids_csv
+        ))
+        .map_err(|e| e.to_string())?;
+    let result = stmt
+        .query_map([], |row| {
+            Ok(TrashedPhoto {
+                id:              row.get("id")?,
+                master_dir:      row.get("master_dir")?,
+                master_filename: row.get("master_filename")?,
+            })
+        })
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(result)
+}
+
 pub fn delete_photos(db: &DbHandle, photo_ids: &[PhotoId]) -> Result<(), String> {
     if photo_ids.is_empty() {
         return Ok(());

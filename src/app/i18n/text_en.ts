@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: 'View photo',
     Picture_select: 'Select',
     Picture_deselect: 'Deselect',
+    Picture_addFavorite: 'Add to favorites',
+    Picture_removeFavorite: 'Remove from favorites',
     Picture_error_createThumbnail: 'Creating thumbnail failed',
+
+    PictureMenu_copyImage: 'Copy image',
+    PictureMenu_moveToTrash: 'Move to trash',
+    PictureMenu_deleteFromDisk: 'Delete from disk',
+    PictureMenu_showInFolder: 'Open containing folder',
+
+    PhotoDelete_confirmDisk_one: 'Move this photo to the trash of the operating system and remove it from the library?',
+    PhotoDelete_confirmDisk_more: 'Move {0} photos to the trash of the operating system and remove them from the library?',
 
     PhotoActionButtons_movedToTrash_one: 'Moved photo to trash',
     PhotoActionButtons_movedToTrash_more: 'Moved {0} photos to trash',

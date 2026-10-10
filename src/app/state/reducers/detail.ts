@@ -3,7 +3,7 @@ import { Action } from 'app/state/ActionType'
 import {
     SET_DETAIL_PHOTO, FETCH_DETAIL_PHOTO_DATA_REQUEST, FETCH_DETAIL_PHOTO_DATA_SUCCESS, FETCH_DETAIL_PHOTO_DATA_FAILURE,
     CLOSE_DETAIL, CHANGE_PHOTOWORK,
-    FETCH_SECTIONS_SUCCESS, CHANGE_PHOTOS, EMPTY_TRASH, FETCH_SECTIONS_FAILURE
+    FETCH_SECTIONS_SUCCESS, CHANGE_PHOTOS, DELETE_PHOTOS, EMPTY_TRASH, FETCH_SECTIONS_FAILURE
 } from 'app/state/actionTypes'
 import { getLoadedSectionByIdFromDataState } from 'app/state/selectors'
 import { DetailState, DataState } from 'app/state/StateTypes'
@@ -122,6 +122,41 @@ export const detail = (state: DetailState = null, dataState: DataState, action: 
             } else {
                 return state
             }
+        case DELETE_PHOTOS: {
+            if (state && action.payload.photoIds.indexOf(state.currentPhoto.photoId) !== -1) {
+                // The shown photo was deleted. Same behaviour as trashing it: show the next photo at
+                // the same index, the previous one when at the end, or close the detail view when the
+                // section has no photos left.
+                const sectionId = state.currentPhoto.sectionId
+                const section = getLoadedSectionByIdFromDataState(dataState, sectionId)
+                let photoIndex = state.currentPhoto.photoIndex
+                let photoId: PhotoId | null = null
+                if (section) {
+                    const photoCount = section.photoIds.length
+                    if (photoIndex >= photoCount) {
+                        photoIndex = photoCount - 1
+                    }
+                    photoId = section.photoIds[photoIndex] || null
+                }
+
+                if (!photoId) {
+                    // The section is empty now -> Close details
+                    return null
+                } else {
+                    return {
+                        currentPhoto: {
+                            fetchState: FetchState.IDLE,
+                            sectionId,
+                            photoIndex,
+                            photoId,
+                            photoWork: null
+                        }
+                    }
+                }
+            } else {
+                return state
+            }
+        }
         default:
             return state
     }

@@ -1,8 +1,8 @@
 import BackgroundClient from 'app/BackgroundClient'
-import { PhotoWork, PhotoSectionId, Photo, PhotoFilter, PhotoId, EmptyTrashResult } from 'app/CommonTypes'
+import { PhotoWork, PhotoSectionId, Photo, PhotoFilter, PhotoId, EmptyTrashResult, DeletePhotosResult } from 'app/CommonTypes'
 import { showError } from 'app/ErrorPresenter'
 import store from 'app/state/store'
-import { fetchTotalPhotoCountAction, fetchPhotoFoldersAction, fetchSectionsAction, changePhotoWorkAction, changePhotosAction, emptyTrashAction } from 'app/state/actions'
+import { fetchTotalPhotoCountAction, fetchPhotoFoldersAction, fetchSectionsAction, changePhotoWorkAction, changePhotosAction, deletePhotosAction, emptyTrashAction } from 'app/state/actions'
 import { PhotoCollection } from 'app/state/StateTypes'
 import { getMasterPath, getThumbnailUrl } from 'app/util/DataUtil'
 import { rotate } from 'app/util/EffectsUtil'
@@ -158,6 +158,40 @@ export function movePhotosToTrash(photos: PhotoCollection) {
 
 export function restorePhotosFromTrash(photos: PhotoCollection) {
     updatePhotos(photos, { trashed: false })
+}
+
+/** Removes the photos from the library: their index rows go away, the files stay on disk. */
+export function deletePhotosFromLibrary(photos: PhotoCollection) {
+    doDeletePhotos(photos, false)
+}
+
+/** Deletes the photos from disk (they are moved to the system trash) and from the library. */
+export function deletePhotosFromDisk(photos: PhotoCollection) {
+    doDeletePhotos(photos, true)
+}
+
+async function doDeletePhotos(photos: PhotoCollection, fromDisk: boolean) {
+    photos = await getPhotosOfCollection(photos)
+    const photoIds = photos.map(photo => photo.id)
+    if (photoIds.length === 0) {
+        return
+    }
+
+    let result: DeletePhotosResult
+    if (fromDisk) {
+        result = await BackgroundClient.deletePhotosFromDisk(photoIds)
+        if (result.failed.length > 0) {
+            showError('Deleting photos failed', new Error(result.failed.join('\n')))
+        }
+    } else {
+        result = await BackgroundClient.deletePhotos(photoIds)
+    }
+
+    if (result.photoIds.length > 0) {
+        store.dispatch(deletePhotosAction(result.photoIds))
+        fetchTotalPhotoCount()
+        fetchPhotoFolders()
+    }
 }
 
 export function updatePhoto(photo: Photo, update: Partial<Photo>) {

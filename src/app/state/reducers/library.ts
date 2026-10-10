@@ -4,7 +4,7 @@ import { PhotoFilter, PhotoSectionId } from 'app/CommonTypes'
 import { Action } from 'app/state/ActionType'
 import {
     SET_GRID_ROW_HEIGHT, FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
-    CHANGE_PHOTOS, SET_LIBRARY_ACTIVE_PHOTO, SET_LIBRARY_HOVER_PHOTO, SET_LIBRARY_SELECTION, EMPTY_TRASH, SET_DETAIL_PHOTO
+    CHANGE_PHOTOS, DELETE_PHOTOS, SET_LIBRARY_ACTIVE_PHOTO, SET_LIBRARY_HOVER_PHOTO, SET_LIBRARY_SELECTION, EMPTY_TRASH, SET_DETAIL_PHOTO
 } from 'app/state/actionTypes'
 import { LibraryState, DisplayState, SectionSelectionState, SelectionState, PhotoLibraryPosition } from 'app/state/StateTypes'
 import { defaultGridRowHeight } from 'app/UiConstants'
@@ -108,6 +108,8 @@ const selection = (state: SelectionState | null = null, action: Action): Selecti
                 return state
             }
         }
+        case DELETE_PHOTOS:
+            return null
         case SET_LIBRARY_SELECTION:
             return action.payload.selection
         default:

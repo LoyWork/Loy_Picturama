@@ -12,6 +12,7 @@ import { isPhotoSelected } from 'app/state/selectors'
 import { SelectionState } from 'app/state/StateTypes'
 import RedCheckCircle from 'app/ui/widget/icon/RedCheckCircle'
 import PhotoActionButtons from 'app/ui/widget/PhotoActionButtons'
+import { showPhotoContextMenu } from 'app/ui/widget/PhotoContextMenu'
 import { CameraMetrics, CameraMetricsBuilder, RequestedPhotoPosition, PhotoPosition } from 'app/util/CameraMetrics'
 import { Size, zeroSize, Insets, zeroInsets, Rect } from 'app/util/GeometryTypes'
 import { bindMany, isShallowEqual } from 'app/util/LangUtil'
@@ -131,8 +132,8 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'onLoadingStateChange', 'onResize', 'onTextureChange', 'onTogglePhotoSelected', 
-            'setPhotoPosition', 'enterCropMode', 'onPhotoWorkEdited', 'onCropDone')
+        bindMany(this, 'onLoadingStateChange', 'onResize', 'onTextureChange', 'onTogglePhotoSelected',
+            'setPhotoPosition', 'enterCropMode', 'onPhotoWorkEdited', 'onCropDone', 'onContextMenu')
         const cameraMetricsBuilder = new CameraMetricsBuilder()
         this.state = {
             prevMode: null,
@@ -166,6 +167,13 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
 
     componentWillUnmount() {
         removeCommandGroup(this.commandGroupId)
+    }
+
+    private onContextMenu(event: React.MouseEvent) {
+        // Only in view mode: crop mode has its own drag/resize interactions on the same surface.
+        if (this.props.mode === 'view') {
+            showPhotoContextMenu(this.props.photo, !!this.props.photo.trashed, this.props.photoActionController, event.nativeEvent)
+        }
     }
 
     private onLoadingStateChange(loadingState: PhotoLayerLoadingState) {
@@ -228,7 +236,7 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
         const { props, state, commands } = this
         const isSelected = isPhotoSelected(props.sectionId, props.photo.id, props.selection)
         return (
-            <div className={classnames(props.className, 'PhotoDetailBody')}>
+            <div className={classnames(props.className, 'PhotoDetailBody')} onContextMenu={this.onContextMenu}>
                 <ResizeSensor onResize={this.onResize}>
                     <div className={classnames(props.bodyClassName, 'PhotoDetailBody-sizer')} />
                 </ResizeSensor>

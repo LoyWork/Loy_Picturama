@@ -216,6 +216,12 @@ export interface EmptyTrashResult {
     updatedTags?: Tag[]
 }
 
+export interface DeletePhotosResult {
+    photoIds: number[]
+    /** Master paths that could not be moved to the system trash. Only used by deletePhotosFromDisk. */
+    failed: string[]
+}
+
 
 export interface MetaData {
     imgWidth?:     number

@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api/core'
 
 import {
     DecodedHeifImage,
+    DeletePhotosResult,
     EmptyTrashResult,
     ExifData,
     MetaData,
@@ -161,6 +162,14 @@ const BackgroundClient = {
 
     updatePhotos(photoIds: PhotoId[], update: Partial<Photo>): Promise<void> {
         return invokeCommand('updatePhotos', { photoIds, update })
+    },
+
+    deletePhotos(photoIds: PhotoId[]): Promise<DeletePhotosResult> {
+        return invokeCommand('deletePhotos', { photoIds })
+    },
+
+    deletePhotosFromDisk(photoIds: PhotoId[]): Promise<DeletePhotosResult> {
+        return invokeCommand('deletePhotosFromDisk', { photoIds })
     },
 
     emptyTrash(): Promise<EmptyTrashResult> {

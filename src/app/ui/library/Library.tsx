@@ -205,6 +205,8 @@ export class Library extends React.Component<Props> {
                             preselectionRange={props.preselectionRange}
                             gridRowHeight={props.gridRowHeight}
                             librarySelectionController={props.librarySelectionController}
+                            photoActionController={props.photoActionController}
+                            isShowingTrash={props.libraryFilterType === 'trash'}
                             getGridLayout={props.getGridLayout}
                             getThumbnailSrc={props.getThumbnailSrc}
                             createThumbnail={props.createThumbnail}

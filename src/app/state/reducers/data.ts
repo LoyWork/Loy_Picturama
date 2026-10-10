@@ -4,7 +4,7 @@ import { PhotoById, TagId, TagById, LoadedPhotoSection, isLoadedPhotoSection, Ph
 import { Action } from 'app/state/ActionType'
 import {
     INIT, SET_SETTINGS, FETCH_TOTAL_PHOTO_COUNT, FETCH_PHOTO_FOLDERS, FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
-    CHANGE_PHOTOS, EMPTY_TRASH,
+    CHANGE_PHOTOS, DELETE_PHOTOS, EMPTY_TRASH,
     FETCH_TAGS, FORGET_SECTION_PHOTOS, FETCH_SECTION_PHOTOS
 } from 'app/state/actionTypes'
 import { DataState, TagsState, FoldersState, SectionsState } from 'app/state/StateTypes'
@@ -199,6 +199,57 @@ const sections = (state: SectionsState = initialSectionsState, action: Action): 
                             } else {
                                 newPhotoData[updatedPhoto.id] = updatedPhoto
                             }
+                        }
+                    }
+                }
+
+                if (!newSection || newSection.photoIds.length !== 0) {
+                    newSectionIds.push(sectionId)
+                    newSectionById[sectionId] = newSection || section
+                }
+            }
+
+            return {
+                ...state,
+                totalPhotoCount,
+                photoCount,
+                ids: newSectionIds,
+                byId: newSectionById
+            }
+        }
+        case DELETE_PHOTOS: {
+            // The photos are gone from the library: remove them from the sections they appear in
+            // (same walk as CHANGE_PHOTOS' trashed branch, but keyed by deleted ids).
+            const deletedIds = action.payload.photoIds
+            const deletedSet = new Set(deletedIds)
+
+            let totalPhotoCount = state.totalPhotoCount
+            let photoCount = state.photoCount
+            let newSectionIds: PhotoSectionId[] = []
+            let newSectionById: PhotoSectionById = {}
+            for (const sectionId of state.ids) {
+                const section = state.byId[sectionId]
+                let newSection: LoadedPhotoSection | null = null
+
+                if (isLoadedPhotoSection(section)) {
+                    const photoData = section.photoData
+                    let newPhotoData: PhotoById | null = null
+                    for (const photoId of section.photoIds) {
+                        if (deletedSet.has(photoId)) {
+                            if (!newPhotoData || !newSection) {
+                                newPhotoData = { ...photoData }
+                                newSection = { ...section, photoData: newPhotoData }
+                            }
+                            const photoIndex = newSection.photoIds.indexOf(photoId)
+                            if (photoIndex !== -1) {
+                                newSection.photoIds.splice(photoIndex, 1)
+                            }
+                            delete newPhotoData[photoId]
+                            if (totalPhotoCount != null) {
+                                totalPhotoCount--
+                            }
+                            newSection.count--
+                            photoCount--
                         }
                     }
                 }

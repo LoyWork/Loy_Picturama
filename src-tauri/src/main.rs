@@ -78,6 +78,8 @@ fn main() {
             commands::photos::fetch_sections,
             commands::photos::fetch_section_photos,
             commands::photos::update_photos,
+            commands::photos::delete_photos,
+            commands::photos::delete_photos_from_disk,
             commands::photos::empty_trash,
             commands::photos::fetch_photo_detail,
             // PhotoWork

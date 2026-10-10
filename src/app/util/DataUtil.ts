@@ -83,6 +83,19 @@ export function decodeImageDataUrlAsBinaryString(dataUrl: string): BinaryString 
     return atob(decodeImageDataUrlAsBase64String(dataUrl))
 }
 
+/**
+ * Writes an image to the system clipboard, so it can be pasted into other apps. The binary string
+ * comes from the WebGL renderer (already PNG-encoded). WebView2/Chromium supports `ClipboardItem`.
+ */
+export async function copyImageToClipboard(binaryString: BinaryString, mimeType = 'image/png'): Promise<void> {
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i)
+    }
+    const blob = new Blob([ bytes ], { type: mimeType })
+    await navigator.clipboard.write([ new ClipboardItem({ [mimeType]: blob }) ])
+}
+
 //export function decodeImageDataUrlAsBuffer(dataUrl: string): Buffer {
 //    return Buffer.from(decodeImageDataUrlAsBase64String(dataUrl), 'base64')
 //}

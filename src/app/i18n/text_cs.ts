@@ -115,7 +115,17 @@ export default {
     Picture_showDetails: 'Zobrazit fotku',
     Picture_select: 'Vybrat',
     Picture_deselect: 'Zrušit výběr',
+    Picture_addFavorite: "Přidat k oblíbeným",
+    Picture_removeFavorite: "Odebrat z oblíbených",
     Picture_error_createThumbnail: 'Vytváření náhledu selhalo',
+
+    PictureMenu_copyImage: "Kopírovat obrázek",
+    PictureMenu_moveToTrash: "Přesunout do koše",
+    PictureMenu_deleteFromDisk: "Odstranit z disku",
+    PictureMenu_showInFolder: "Otevřít složku",
+
+    PhotoDelete_confirmDisk_one: "Přesunout tuto fotografii do koše operačního systému a odebrat ji z knihovny?",
+    PhotoDelete_confirmDisk_more: "Přesunout {0} fotografií do koše operačního systému a odebrat je z knihovny?",
 
     PhotoActionButtons_movedToTrash_one: 'Fotografie přesunuta do koše',
     PhotoActionButtons_movedToTrash_more: '{0} fotografií přesunuto do koše',

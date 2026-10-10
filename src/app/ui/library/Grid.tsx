@@ -9,6 +9,7 @@ import { GridSectionLayout, GridLayout, JustifiedLayoutBox } from 'app/UITypes'
 import { CommandGroupId, addCommandGroup, setCommandGroupEnabled, removeCommandGroup } from 'app/controller/HotkeyController'
 import { NailedGridPosition, GetGridLayoutFunction, PhotoGridPosition } from 'app/controller/LibraryController'
 import { LibrarySelectionController } from 'app/controller/LibrarySelectionController'
+import { PhotoActionController } from 'app/controller/PhotoActionController'
 import { isPhotoSelected } from 'app/state/selectors'
 import { PhotoLibraryPosition, PreselectionRange, SectionPreselection, SelectionState } from 'app/state/StateTypes'
 import { gridScrollBarWidth, toolbarHeight } from 'app/style/variables'
@@ -37,6 +38,8 @@ interface Props {
     preselectionRange: PreselectionRange | null
     gridRowHeight: number
     librarySelectionController: LibrarySelectionController
+    photoActionController: PhotoActionController
+    isShowingTrash: boolean
     getGridLayout: GetGridLayoutFunction
     getThumbnailSrc: (photo: Photo) => string
     createThumbnail: (sectionId: PhotoSectionId, photo: Photo) => CancelablePromise<string>
@@ -229,6 +232,8 @@ export default class Grid extends React.Component<Props, State> {
                     sectionSelection={props.selection?.sectionSelectionById[sectionId]}
                     sectionPreselection={getSectionPreselection(sectionIndex, props.preselectionRange)}
                     librarySelectionController={props.librarySelectionController}
+                    photoActionController={props.photoActionController}
+                    isShowingTrash={props.isShowingTrash}
                     getThumbnailSrc={props.getThumbnailSrc}
                     createThumbnail={props.createThumbnail}
                     showPhotoDetails={this.showPhotoDetails}
