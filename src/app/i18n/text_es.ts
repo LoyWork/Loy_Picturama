@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: `WebGL deshabilitado`,
     App_error_noWebGL_desc: `Picturama necesita una tarjeta gráfica con aceleración 3D para poder funcionar. Por favor revisa en la configuración de tu sistema si es posible activar la aceleración 3D y reinicia Picturama.`,
+    App_toggleSidebar: "Mostrar u ocultar la barra lateral",
 
     CropModeToolbar_aspect_free: 'Libre',
     CropModeToolbar_aspect_original: 'Original',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Papelera',
     LibraryFilterButton_filter_tag: 'Con etiqueta "{0}"',
     LibraryFilterButton_tag_title: 'Con etiqueta:',
+
+    FolderSidebar_title: "Carpetas",
+    FolderSidebar_all: "Todas las fotos",
 
     LibraryTopBar_emptyTrashQuestion: '¿Estás seguro de que quieres vaciar la papelera?',
     LibraryTopBar_moveToTrash: 'Mover a la papelera del sistema operativo',

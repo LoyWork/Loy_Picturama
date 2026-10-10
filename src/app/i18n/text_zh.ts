@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: '没有WebGL',
     App_error_noWebGL_desc: 'Picturama需要有3D加速的图形卡才能运作,请查看系统设置中是否可以激活3D加速并重新启动Picturama',
+    App_toggleSidebar: '显示或隐藏侧栏',
 
     CropModeToolbar_aspect_free: '任意',
     CropModeToolbar_aspect_original: '原始',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: '垃圾桶',
     LibraryFilterButton_filter_tag: '带标签"{0}" ',
     LibraryFilterButton_tag_title: '有标签：',
+
+    FolderSidebar_title: '文件夹',
+    FolderSidebar_all: '全部照片',
 
     LibraryTopBar_emptyTrashQuestion: '你确定要清空垃圾桶吗?',
     LibraryTopBar_moveToTrash: '移动到操作系统的垃圾桶',

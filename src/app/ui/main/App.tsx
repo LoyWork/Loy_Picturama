@@ -13,12 +13,12 @@ import { msg } from 'app/i18n/i18n'
 import PhotoDetailPane from 'app/ui/detail/PhotoDetailPane'
 import ExportDialog from 'app/ui/export/ExportDialog'
 import Library from 'app/ui/library/Library'
-import LibraryFilterButton from 'app/ui/library/LibraryFilterButton'
 import SelectionSummary from 'app/ui/library/SelectionSummary'
 import ImportProgressButton from 'app/ui/ImportProgressButton'
 import SettingsPane from 'app/ui/SettingsPane'
 import ErrorBoundary from 'app/ui/widget/ErrorBoundary'
-import { openSettingsAction } from 'app/state/actions'
+import { openSettingsAction, setShowSidebarAction } from 'app/state/actions'
+import store from 'app/state/store'
 import { AppState, MainViewState } from 'app/state/StateTypes'
 
 import WindowControls from './WindowControls'
@@ -41,6 +41,8 @@ interface StateProps {
     mainView: MainViewState
     importProgress: ImportProgress | null
     showExport: boolean
+    showSidebar: boolean
+    hasSidebarContent: boolean
 }
 
 interface DispatchProps {
@@ -49,6 +51,7 @@ interface DispatchProps {
     openSettings(): void
     toggleImportPaused(): void
     cancelImport(): void
+    toggleSidebar(): void
 }
 
 interface Props extends OwnProps, StateProps, DispatchProps {
@@ -106,7 +109,14 @@ class App extends React.Component<Props> {
                             onClick={props.toggleFullScreen}
                         />
                     }
-                    <LibraryFilterButton/>
+                    <Button
+                        minimal={true}
+                        icon='drawer-left'
+                        active={props.showSidebar}
+                        disabled={!props.hasSidebarContent}
+                        title={msg('App_toggleSidebar')}
+                        onClick={props.toggleSidebar}
+                    />
                     <Button
                         minimal={true}
                         icon='cog'
@@ -166,6 +176,8 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
             mainView: state.navigation.mainView,
             importProgress: state.import && state.import.progress,
             showExport: !!state.export,
+            showSidebar: state.navigation.showSidebar,
+            hasSidebarContent: true,
         }
     },
     dispatch => ({
@@ -173,6 +185,7 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
         clearSelection() { defaultLibrarySelectionController.clearSelection() },
         toggleImportPaused() { BackgroundClient.toggleImportPaused() },
         cancelImport() { BackgroundClient.cancelImport() },
+        toggleSidebar() { dispatch(setShowSidebarAction(!store.getState().navigation.showSidebar)) },
         ...bindActionCreators({
             openSettings: openSettingsAction
         }, dispatch)

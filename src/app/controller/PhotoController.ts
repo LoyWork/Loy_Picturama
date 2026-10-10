@@ -2,7 +2,7 @@ import BackgroundClient from 'app/BackgroundClient'
 import { PhotoWork, PhotoSectionId, Photo, PhotoFilter, PhotoId, EmptyTrashResult } from 'app/CommonTypes'
 import { showError } from 'app/ErrorPresenter'
 import store from 'app/state/store'
-import { fetchTotalPhotoCountAction, fetchSectionsAction, changePhotoWorkAction, changePhotosAction, emptyTrashAction } from 'app/state/actions'
+import { fetchTotalPhotoCountAction, fetchPhotoFoldersAction, fetchSectionsAction, changePhotoWorkAction, changePhotosAction, emptyTrashAction } from 'app/state/actions'
 import { PhotoCollection } from 'app/state/StateTypes'
 import { getMasterPath, getThumbnailUrl } from 'app/util/DataUtil'
 import { rotate } from 'app/util/EffectsUtil'
@@ -17,6 +17,14 @@ let thumbnailVersion = Date.now()
 export function fetchTotalPhotoCount() {
     BackgroundClient.fetchTotalPhotoCount()
         .then(totalPhotoCount => store.dispatch(fetchTotalPhotoCountAction(totalPhotoCount)))
+}
+
+export function fetchPhotoFolders() {
+    BackgroundClient.fetchPhotoFolders()
+        .then(folders => store.dispatch(fetchPhotoFoldersAction(folders)))
+        .catch(error => {
+            console.error('Fetching photo folders failed', error)
+        })
 }
 
 export function fetchSections(sectionIdsToKeepLoaded?: PhotoSectionId[]) {

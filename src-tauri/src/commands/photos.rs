@@ -3,10 +3,12 @@
 use std::path::Path;
 use tauri::State;
 
+use crate::app_config_builder::AppConfig;
 use crate::store::db::DbHandle;
-use crate::store::{photo_store, photo_work_store, tag_store};
+use crate::store::{photo_store, photo_work_store, settings_store, tag_store};
 use crate::types::common_types::{
-    EmptyTrashResult, PhotoDetail, PhotoFilter, PhotoId, PhotoSection, PhotoSectionId, PhotoSet,
+    EmptyTrashResult, PhotoDetail, PhotoFilter, PhotoFolder, PhotoId, PhotoSection, PhotoSectionId,
+    PhotoSet,
 };
 
 #[tauri::command]
@@ -14,13 +16,38 @@ pub async fn fetch_total_photo_count(db: State<'_, DbHandle>) -> Result<u32, Str
     tokio::task::block_in_place(|| photo_store::fetch_total_photo_count(&db))
 }
 
+/// The filter with the configured photo roots filled in, so the store layer can resolve a folder
+/// filter without the web view being able to name arbitrary directories.
+fn filter_with_photo_roots(mut filter: PhotoFilter, app_config: &AppConfig) -> PhotoFilter {
+    let settings_path = app_config.picturama_home_dir.join("settings.json");
+    let photo_roots = settings_store::fetch_settings(&settings_path)
+        .map(|s| s.photo_dirs)
+        .unwrap_or_default();
+    filter.photo_roots = Some(photo_roots);
+    filter
+}
+
+#[tauri::command]
+pub async fn fetch_photo_folders(
+    app_config: State<'_, AppConfig>,
+    db: State<'_, DbHandle>,
+) -> Result<Vec<PhotoFolder>, String> {
+    let settings_path = app_config.picturama_home_dir.join("settings.json");
+    let photo_roots = settings_store::fetch_settings(&settings_path)
+        .map(|s| s.photo_dirs)
+        .unwrap_or_default();
+    tokio::task::block_in_place(|| photo_store::fetch_photo_folders(&db, &photo_roots))
+}
+
 #[tauri::command]
 pub async fn fetch_sections(
     filter: PhotoFilter,
     section_ids_to_keep_loaded: Option<Vec<PhotoSectionId>>,
+    app_config: State<'_, AppConfig>,
     db: State<'_, DbHandle>,
 ) -> Result<Vec<PhotoSection>, String> {
     let keep = section_ids_to_keep_loaded.unwrap_or_default();
+    let filter = filter_with_photo_roots(filter, &app_config);
     tokio::task::block_in_place(|| {
         photo_store::fetch_sections(
             &db,
@@ -34,8 +61,10 @@ pub async fn fetch_sections(
 pub async fn fetch_section_photos(
     section_ids: Vec<PhotoSectionId>,
     filter: PhotoFilter,
+    app_config: State<'_, AppConfig>,
     db: State<'_, DbHandle>,
 ) -> Result<Vec<PhotoSet>, String> {
+    let filter = filter_with_photo_roots(filter, &app_config);
     tokio::task::block_in_place(|| {
         photo_store::fetch_section_photos(&db, &section_ids, &filter)
     })

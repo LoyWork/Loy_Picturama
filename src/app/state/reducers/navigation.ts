@@ -1,5 +1,5 @@
 import { Action } from 'app/state/ActionType'
-import { SET_DEVICE_PIXEL_RATIO, SET_WEB_GL_SUPPORT, SET_FULL_SCREEN, SET_SHIFT_PRESSED, OPEN_SETTINGS, CLOSE_SETTINGS } from 'app/state/actionTypes'
+import { SET_DEVICE_PIXEL_RATIO, SET_WEB_GL_SUPPORT, SET_FULL_SCREEN, SET_SHIFT_PRESSED, OPEN_SETTINGS, CLOSE_SETTINGS, SET_SHOW_SIDEBAR } from 'app/state/actionTypes'
 
 import { NavigationState, DetailState } from 'app/state/StateTypes'
 
@@ -9,6 +9,7 @@ const initialNavigationState: NavigationState = {
     hasWebGLSupport: true,
     isFullScreen: false,
     isShiftPressed: false,
+    showSidebar: true,
     mainView: null
 }
 
@@ -33,6 +34,11 @@ export const navigation = (state: NavigationState = initialNavigationState, deta
             return {
                 ...state,
                 isShiftPressed: action.payload
+            }
+        case SET_SHOW_SIDEBAR:
+            return {
+                ...state,
+                showSidebar: action.payload.show
             }
         case OPEN_SETTINGS:
             return {

@@ -1,12 +1,13 @@
 import { action, createAsyncAction } from 'typesafe-actions'
 
-import { ImportProgress, PhotoId, Photo, Tag, PhotoDetail, PhotoWork, PhotoSection, PhotoSectionId, PhotoSet, PhotoFilter, Settings, UiConfig, PhotoExportOptions, PhotoExportProgress, ExifData, MetaData } from 'app/CommonTypes'
+import { ImportProgress, PhotoFolder, PhotoId, Photo, Tag, PhotoDetail, PhotoWork, PhotoSection, PhotoSectionId, PhotoSet, PhotoFilter, Settings, UiConfig, PhotoExportOptions, PhotoExportProgress, ExifData, MetaData } from 'app/CommonTypes'
 
 import {
     INIT, SET_DEVICE_PIXEL_RATIO, SET_WEB_GL_SUPPORT, SET_FULL_SCREEN, SET_SHIFT_PRESSED,
-    OPEN_SETTINGS, SET_SETTINGS, CLOSE_SETTINGS, SET_GRID_ROW_HEIGHT,
+    OPEN_SETTINGS, SET_SETTINGS, CLOSE_SETTINGS, SET_GRID_ROW_HEIGHT, SET_SHOW_SIDEBAR,
     SET_DETAIL_PHOTO, FETCH_DETAIL_PHOTO_DATA_REQUEST, FETCH_DETAIL_PHOTO_DATA_SUCCESS, FETCH_DETAIL_PHOTO_DATA_FAILURE,
     CLOSE_DETAIL, SET_LIBRARY_ACTIVE_PHOTO, SET_LIBRARY_HOVER_PHOTO, SET_LIBRARY_SELECTION, FETCH_TOTAL_PHOTO_COUNT,
+    FETCH_PHOTO_FOLDERS,
     FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
     FETCH_SECTION_PHOTOS, FORGET_SECTION_PHOTOS,
     CHANGE_PHOTOWORK, CHANGE_PHOTOS, EMPTY_TRASH, SET_SHOW_INFO, SET_INFO_PHOTO_DATA,
@@ -25,6 +26,7 @@ export const setShiftPressedAction = (isShiftPressed: boolean) => action(SET_SHI
 export const openSettingsAction = () => action(OPEN_SETTINGS)
 export const setSettingsAction = (settings: Settings) => action(SET_SETTINGS, settings)
 export const closeSettingsAction = () => action(CLOSE_SETTINGS)
+export const setShowSidebarAction = (show: boolean) => action(SET_SHOW_SIDEBAR, { show })
 
 export const setGridRowHeightAction = (gridRowHeight: number) => action(SET_GRID_ROW_HEIGHT, { gridRowHeight })
 
@@ -37,6 +39,7 @@ export const setLibraryHoverPhotoAction = (hoverPhoto: PhotoLibraryPosition | nu
 export const setLibrarySelectionAction = (selection: SelectionState | null, activePhoto?: PhotoLibraryPosition) => action(SET_LIBRARY_SELECTION, { selection, activePhoto })
 
 export const fetchTotalPhotoCountAction = (totalPhotoCount: number) => action(FETCH_TOTAL_PHOTO_COUNT, { totalPhotoCount })
+export const fetchPhotoFoldersAction = (folders: PhotoFolder[]) => action(FETCH_PHOTO_FOLDERS, { folders })
 export const fetchSectionsAction = createAsyncAction(FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE)<{ newFilter: PhotoFilter | null }, { sections: PhotoSection[] }, Error>()
 export const fetchSectionPhotosAction = (sectionIds: PhotoSectionId[], photoSets: PhotoSet[]) => action(FETCH_SECTION_PHOTOS, { sectionIds, photoSets })
 export const forgetSectionPhotosAction = (sectionIds: { [index: string]: true }) => action(FORGET_SECTION_PHOTOS, { sectionIds })

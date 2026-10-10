@@ -166,14 +166,21 @@ export function isLoadedPhotoSection(section: PhotoSection | null | undefined | 
 export type PhotoSectionById = { [K in PhotoSectionId]: PhotoSection | LoadedPhotoSection }
 
 
-export type PhotoFilterType = 'all' | 'favorites' | 'trash' | 'tag'  //  | 'processed'
+export type PhotoFilterType = 'all' | 'favorites' | 'trash' | 'tag' | 'folder'  //  | 'processed'
 export type PhotoFilter =
     { readonly filterType: 'all' } |
     { readonly filterType: 'favorites' } |
     { readonly filterType: 'trash' } |
-    { readonly filterType: 'tag', readonly tagId: TagId }
+    { readonly filterType: 'tag', readonly tagId: TagId } |
+    { readonly filterType: 'folder', readonly folder: string }
     // TODO: Revive Legacy code of 'version' feature
     // -> Add 'processed'
+
+/** One top-level folder inside a photo root directory, for the folder sidebar. */
+export interface PhotoFolder {
+    name: string
+    count: number
+}
 
 
 export interface PhotoRenderOptions {

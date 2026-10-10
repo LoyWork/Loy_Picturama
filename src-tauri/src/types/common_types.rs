@@ -69,7 +69,7 @@ pub struct IpcErrorInfo {
 }
 
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Settings {
     pub photo_dirs: Vec<String>,
@@ -167,6 +167,15 @@ pub struct PhotoSet {
     pub photo_data: HashMap<PhotoId, Photo>,
 }
 
+/// One top-level folder inside a photo root directory, for the folder sidebar: the folder's display
+/// name (the first path segment) and the number of non-trashed photos in it (including subfolders).
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PhotoFolder {
+    pub name: String,
+    pub count: u32,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 /// The style of the main window:
@@ -177,6 +186,7 @@ pub enum PhotoFilterType {
     Favorites,
     Trash,
     Tag,
+    Folder,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -184,6 +194,15 @@ pub enum PhotoFilterType {
 pub struct PhotoFilter {
     pub filter_type: PhotoFilterType,
     pub tag_id: Option<TagId>,
+    /// The top-level folder name (first path segment inside a photo root directory). Only used by
+    /// `PhotoFilterType::Folder`. Photos in nested directories count when this is their top-level folder.
+    pub folder: Option<String>,
+    /// The configured photo root directories. Not sent by the web view — the command layer fills this
+    /// in from the settings before the filter reaches the store, so the folder filter can resolve the
+    /// folder name against the roots. `serde(default)` keeps old callers (and tests) working.
+    #[serde(default)]
+    #[serde(skip_serializing)]
+    pub photo_roots: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -213,7 +232,7 @@ impl PhotoRenderFormat {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoExportOptions {
     // Inherited from PhotoRenderOptions on the TS side (`extends`); needed here for the render call and

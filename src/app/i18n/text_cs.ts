@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: 'Žádné WebGL',
     App_error_noWebGL_desc: 'Picturama vyžaduje grafickou kartu s 3D akcelerací. Podívejte se prosím do systémových nastavení, zda je možné aktivovat 3D akceleraci a restartujte Picturama.',
+    App_toggleSidebar: "Zobrazit nebo skrýt postranní panel",
 
     CropModeToolbar_aspect_free: 'Zdarma',
     CropModeToolbar_aspect_original: 'Původní',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Koš',
     LibraryFilterButton_filter_tag: 'Se štítkem "{0}"',
     LibraryFilterButton_tag_title: 'Se štítkem:',
+
+    FolderSidebar_title: "Složky",
+    FolderSidebar_all: "Všechny fotky",
 
     LibraryTopBar_emptyTrashQuestion: 'Opravdu chcete vysypat koš?',
     LibraryTopBar_moveToTrash: 'Přesunout do koše operačního systému',

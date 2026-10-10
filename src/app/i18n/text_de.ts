@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: 'Kein WebGL',
     App_error_noWebGL_desc: 'Picturama benötigt eine Grafikkarte mit 3D-Beschleunigung um zu funktionieren. Bitte schaue in den System-Einstellungen, ob Du 3D-Beschleunigung aktivieren kannst und starte Picturama dann neu.',
+    App_toggleSidebar: "Seitenleiste ein- oder ausblenden",
 
     CropModeToolbar_aspect_free: 'Frei',
     CropModeToolbar_aspect_original: 'Original',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Papierkorb',
     LibraryFilterButton_filter_tag: 'Mit Schlagwort "{0}"',
     LibraryFilterButton_tag_title: 'Mit Schlagwort:',
+
+    FolderSidebar_title: "Ordner",
+    FolderSidebar_all: "Alle Fotos",
 
     LibraryTopBar_emptyTrashQuestion: 'Möchtest Du den Papierkorb leeren?',
     LibraryTopBar_moveToTrash: 'In Betriebsystem-Papierkorb verschieben',

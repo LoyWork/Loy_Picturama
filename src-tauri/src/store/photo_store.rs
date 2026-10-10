@@ -11,6 +11,91 @@ pub fn fetch_total_photo_count(db: &DbHandle) -> Result<u32, String> {
         .map_err(|e| e.to_string())
 }
 
+// ---------------------------------------------------------------------------
+// Folders (top-level directories inside the photo roots, for the sidebar)
+// ---------------------------------------------------------------------------
+
+/// The top-level folders inside `photo_roots` that contain non-trashed photos, sorted by name.
+/// A photo's top-level folder is the first path segment of its `master_dir` after the photo root it
+/// lies in; photos directly in a root have no folder and are only reachable via the "all" filter.
+pub fn fetch_photo_folders(db: &DbHandle, photo_roots: &[String]) -> Result<Vec<PhotoFolder>, String> {
+    let conn = db.lock().unwrap();
+    let mut stmt = conn
+        .prepare("SELECT master_dir, count(*) FROM photos WHERE trashed = 0 GROUP BY master_dir")
+        .map_err(|e| e.to_string())?;
+    let rows: Vec<(String, u32)> = stmt
+        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+        .map_err(|e| e.to_string())?
+        .filter_map(|r| r.ok())
+        .collect();
+    drop(stmt);
+    drop(conn);
+
+    // Counts keyed by folder name, insertion-ordered so the final list is sorted by name.
+    let mut counts: std::collections::BTreeMap<String, u32> = std::collections::BTreeMap::new();
+    for (master_dir, count) in rows {
+        if let Some(folder) = top_level_folder(&master_dir, photo_roots) {
+            *counts.entry(folder).or_insert(0) += count;
+        }
+    }
+
+    Ok(counts
+        .into_iter()
+        .map(|(name, count)| PhotoFolder { name, count })
+        .collect())
+}
+
+/// The name of the top-level folder `master_dir` lies in (the first path segment after the photo root
+/// containing it), or `None` when `master_dir` is a photo root itself. The photo root is found by a
+/// case-insensitive longest-prefix match on path components — Windows paths may differ in case and in
+/// separator (`\` vs `/`) between settings and import, and a root must not match a sibling that merely
+/// shares a prefix (`…/photos2` is not inside `…/photos`).
+fn top_level_folder(master_dir: &str, photo_roots: &[String]) -> Option<String> {
+    let dir = normalise_path(master_dir);
+    let mut best_root: Option<String> = None;
+    for root in photo_roots {
+        let root = normalise_path(root);
+        if dir.len() > root.len()
+            && dir.as_bytes()[root.len()] == b'/'
+            && dir[..root.len()].eq_ignore_ascii_case(&root)
+            && best_root.as_ref().map_or(true, |best| root.len() > best.len())
+        {
+            best_root = Some(root);
+        }
+    }
+    let root = best_root?;
+    let rest = &dir[root.len() + 1..];
+    let segment_end = rest.find('/').unwrap_or(rest.len());
+    if segment_end == 0 {
+        return None;
+    }
+    Some(rest[..segment_end].to_string())
+}
+
+/// Replaces `\` with `/` and drops trailing separators, so paths from settings (Windows backslash
+/// form) and from the import scanner (forward-slash joins) compare equal.
+fn normalise_path(path: &str) -> String {
+    let trimmed = path.trim_end_matches(['/', '\\']);
+    if trimmed.contains('\\') {
+        trimmed.replace('\\', "/")
+    } else {
+        trimmed.to_string()
+    }
+}
+
+/// The `root/folder` prefixes to match a folder filter against: one per photo root (same longest-prefix
+/// rule as `top_level_folder`). A prefix under a root that has no such folder simply matches nothing,
+/// so no filesystem check is needed here. Prefixes are normalised to forward slashes, and
+/// `filter_where` normalises the `master_dir` column the same way — rows hold whatever separator form
+/// the photo root had in the settings when it was scanned (`D:\dir/sub` on Windows), so the comparison
+/// must be separator-agnostic on the row side.
+fn folder_prefixes(folder: &str, photo_roots: &[String]) -> Vec<String> {
+    photo_roots
+        .iter()
+        .map(|root| format!("{}/{}", normalise_path(root), folder))
+        .collect()
+}
+
 pub fn fetch_sections(
     db: &DbHandle,
     filter: &PhotoFilter,
@@ -394,7 +479,36 @@ fn filter_where(filter: &PhotoFilter) -> (String, Vec<Value>) {
         }
     }
 
+    if matches!(&filter.filter_type, PhotoFilterType::Folder) {
+        if let Some(folder) = &filter.folder {
+            if let Some(roots) = filter.photo_roots.as_deref() {
+                // One condition per photo root, OR-combined: a photo matches when it lies in the
+                // folder under *any* of the configured roots. AND-combining them (as a naïve
+                // condition-per-root loop would) can never match — a photo lives under one root.
+                let folder_conditions: Vec<String> = roots.iter().map(|_root| {
+                    "(REPLACE(master_dir, '\\', '/') = ? OR REPLACE(master_dir, '\\', '/') LIKE ? ESCAPE '\\')".to_string()
+                }).collect();
+                sql += &format!(" AND ({})", folder_conditions.join(" OR "));
+                for prefix in folder_prefixes(folder, roots) {
+                    // The folder itself or anything inside it (subdirectories included). LIKE's
+                    // wildcards in the folder name are escaped; the root needs no escaping: it was
+                    // matched component-wise against the real directory, so it may contain wildcards.
+                    // The column is normalised to forward slashes so rows written with a backslash
+                    // photo root (`D:\dir/sub`) match the normalised prefix (`D:/dir/folder`).
+                    params.push(Value::Text(prefix.clone()));
+                    params.push(Value::Text(format!("{}{}", like_escape(&prefix), "/%")));
+                }
+            }
+        }
+    }
+
     (sql, params)
+}
+
+/// Escapes LIKE wildcards (`%`, `_`) and the escape character (`\`) so a literal match can be made
+/// with `LIKE ? ESCAPE '\'`.
+fn like_escape(s: &str) -> String {
+    s.replace('\\', "\\\\").replace('%', "\\%").replace('_', "\\_")
 }
 
 /// Map a rusqlite Row to a Photo.
@@ -428,5 +542,272 @@ fn json_to_sql_value(v: &serde_json::Value) -> Value {
         }
         serde_json::Value::String(s) => Value::Text(s.clone()),
         _ => Value::Null,
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    fn filter(filter_type: PhotoFilterType, folder: Option<&str>, photo_roots: &[&str]) -> PhotoFilter {
+        PhotoFilter {
+            filter_type,
+            tag_id: None,
+            folder: folder.map(String::from),
+            photo_roots: Some(photo_roots.iter().map(|r| r.to_string()).collect()),
+        }
+    }
+
+    #[test]
+    fn top_level_folder_finds_first_segment_after_root() {
+        let roots = vec!["C:/photos".to_string()];
+        assert_eq!(top_level_folder("C:/photos/2025 Beijing", &roots).as_deref(), Some("2025 Beijing"));
+        assert_eq!(top_level_folder("C:/photos/2025 Beijing/day1", &roots).as_deref(), Some("2025 Beijing"));
+        assert_eq!(top_level_folder("C:/photos", &roots), None);
+        assert_eq!(top_level_folder("C:/somewhere-else/2025", &roots), None);
+        // A sibling sharing a prefix must not count as the root
+        assert_eq!(top_level_folder("C:/photos2/2025", &roots), None);
+    }
+
+    #[test]
+    fn top_level_folder_prefers_longest_root() {
+        let roots = vec!["C:/photos".to_string(), "C:/photos/imported".to_string()];
+        assert_eq!(top_level_folder("C:/photos/imported/2025", &roots).as_deref(), Some("2025"));
+        assert_eq!(top_level_folder("C:/photos/2026", &roots).as_deref(), Some("2026"));
+    }
+
+    #[test]
+    fn top_level_folder_matches_case_insensitively() {
+        let roots = vec!["C:/Photos".to_string()];
+        assert_eq!(top_level_folder("c:/photos/2025 Beijing", &roots).as_deref(), Some("2025 Beijing"));
+    }
+
+    #[test]
+    fn top_level_folder_tolerates_trailing_slash_in_root() {
+        let roots = vec!["C:/photos/".to_string()];
+        assert_eq!(top_level_folder("C:/photos/2025", &roots).as_deref(), Some("2025"));
+    }
+
+    #[test]
+    fn fetch_photo_folders_aggregates_and_sorts() {
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE photos (id integer PRIMARY KEY, master_dir text, trashed boolean DEFAULT 0);
+             INSERT INTO photos (master_dir) VALUES
+               ('C:/photos/2026 Chengdu'), ('C:/photos/2026 Chengdu'), ('C:/photos/2026 Chengdu/day1'),
+               ('C:/photos/2025 Beijing'), ('C:/photos'), ('C:/photos2/2025'),
+               ('C:/photos/Trash can');",
+        )
+        .unwrap();
+        conn.execute("UPDATE photos SET trashed = 1 WHERE master_dir = 'C:/photos/Trash can'", [])
+            .unwrap();
+
+        let db: DbHandle = std::sync::Arc::new(std::sync::Mutex::new(conn));
+        let folders = fetch_photo_folders(&db, &["C:/photos".to_string()]).unwrap();
+
+        let names: Vec<&str> = folders.iter().map(|f| f.name.as_str()).collect();
+        assert_eq!(names, vec!["2025 Beijing", "2026 Chengdu"]);
+        assert_eq!(folders[0].count, 1);
+        assert_eq!(folders[1].count, 3);
+    }
+
+    #[test]
+    fn filter_where_folder_matches_folder_and_subfolders() {
+        let filter = filter(PhotoFilterType::Folder, Some("2025 Beijing"), &["C:/photos"]);
+        let (sql, params) = filter_where(&filter);
+        assert!(sql.contains(r"REPLACE(master_dir, '\', '/') = ?"), "sql: {}", sql);
+        assert!(sql.contains(r"LIKE ? ESCAPE '\'"), "sql: {}", sql);
+        assert_eq!(params[1], Value::Text("C:/photos/2025 Beijing".to_string()));
+        assert_eq!(params[2], Value::Text("C:/photos/2025 Beijing/%".to_string()));
+    }
+
+    /// A photo root stored in backslash form (typical Windows settings.json) must still match rows
+    /// that keep that backslash root in `master_dir`: both sides are normalised to forward slashes.
+    #[test]
+    fn filter_where_folder_normalises_backslash_root() {
+        let filter = filter(PhotoFilterType::Folder, Some("2025 Beijing"), &["C:\\photos"]);
+        let (sql, params) = filter_where(&filter);
+        assert!(sql.contains(r"REPLACE(master_dir, '\', '/')"), "sql: {}", sql);
+        assert_eq!(params[1], Value::Text("C:/photos/2025 Beijing".to_string()));
+        assert_eq!(params[2], Value::Text("C:/photos/2025 Beijing/%".to_string()));
+
+        // Prove the SQL matches real rows: a row stored with the backslash root...
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE photos (id integer PRIMARY KEY, master_dir text, trashed boolean DEFAULT 0);
+             INSERT INTO photos (master_dir) VALUES ('C:\\photos/2025 Beijing/day1/x.png');",
+        )
+        .unwrap();
+        let matched: i64 = conn
+            .query_row(&format!("SELECT count(*) FROM photos WHERE {}", sql), rusqlite::params_from_iter(params.iter()), |r| r.get(0))
+            .unwrap();
+        assert_eq!(matched, 1);
+    }
+
+    #[test]
+    fn filter_where_folder_escapes_like_wildcards() {
+        let filter = filter(PhotoFilterType::Folder, Some("100%_good"), &["C:/photos"]);
+        let (_, params) = filter_where(&filter);
+        assert_eq!(params[2], Value::Text(r"C:/photos/100\%\_good/%".to_string()));
+    }
+
+    #[test]
+    fn filter_where_folder_without_matching_root_matches_nothing_extra() {
+        // Two roots: the folder conditions must be OR-combined (a photo lives under one root, so
+        // AND-combining them can never match — the bug that broke the sidebar with multiple roots).
+        let filter = filter(PhotoFilterType::Folder, Some("2025"), &["C:/photos", "D:/archive"]);
+        let (sql, params) = filter_where(&filter);
+        assert_eq!(params.len(), 5);
+        assert_eq!(params[1], Value::Text("C:/photos/2025".to_string()));
+        assert_eq!(params[3], Value::Text("D:/archive/2025".to_string()));
+        assert_eq!(sql.matches(r"REPLACE(master_dir, '\', '/') = ?").count(), 2);
+
+        // Prove the OR semantics against real SQLite: a row under the second root matches even
+        // though the first root's condition doesn't.
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE photos (id integer PRIMARY KEY, master_dir text, trashed boolean DEFAULT 0, flag boolean DEFAULT 0);
+             INSERT INTO photos (master_dir) VALUES ('D:/archive/2025/day1/x.png');",
+        )
+        .unwrap();
+        let matched: i64 = conn
+            .query_row(&format!("SELECT count(*) FROM photos WHERE {}", sql),
+                rusqlite::params_from_iter(params.iter()), |r| r.get(0))
+            .unwrap();
+        assert_eq!(matched, 1, "second root's rows must match (OR, not AND)");
+    }
+
+    /// End-to-end: photos in nested directories (like the scanner would import them), then folder
+    /// listing and folder-filtered section queries against the real migration schema.
+    #[test]
+    fn folder_filter_end_to_end() {
+        // --- Fixtures: a photo root with two folders, one nested, plus a root-level photo ---
+        let root = TempDir::new("folder-root");
+        let beijing = root.path.join("2025 Beijing");
+        let day1 = beijing.join("day1");
+        let chengdu = root.path.join("2026 Chengdu");
+        std::fs::create_dir_all(&day1).unwrap();
+        std::fs::create_dir_all(&chengdu).unwrap();
+        write_png(&beijing, "b1.png", 4, 6);
+        write_png(&day1, "d1.png", 8, 3);
+        write_png(&chengdu, "c1.png", 9, 9);
+        write_png(&root.path, "root.png", 2, 2);
+
+        let home = TempDir::new("folder-home");
+        let db = crate::store::db::open(&home.path.join("db.sqlite3"), &migrations_dir()).unwrap();
+
+        // Import like the scanner does: every photo of every directory, in one batch per directory.
+        // The scanner always joins directories with '/', so `master_dir` uses forward slashes even
+        // on Windows - mirror that here, or the folder-prefix match below would find nothing.
+        let mut batch: Vec<(NewPhoto, Vec<String>)> = Vec::new();
+        for dir in [root.str(), path_str(&beijing), path_str(&day1), path_str(&chengdu)] {
+            let dir = dir.replace('\\', "/");
+            for entry in std::fs::read_dir(&dir).unwrap().filter_map(|e| e.ok()) {
+                let name = entry.file_name().to_string_lossy().to_string();
+                if !name.ends_with(".png") {
+                    continue;
+                }
+                batch.push((NewPhoto {
+                    master_dir: dir.clone(),
+                    master_filename: name,
+                    master_width: 10,
+                    master_height: 10,
+                    edited_width: 10,
+                    edited_height: 10,
+                    date_section: "2025-01-01".to_string(),
+                    created_at: 0,
+                    updated_at: 0,
+                    imported_at: 0,
+                    flag: false,
+                }, vec![]));
+            }
+        }
+        let (added, _) = insert_photos_batch(&db, &batch).unwrap();
+        assert_eq!(added, 4);
+
+        let roots = vec![root.str()];
+
+        // --- Folder listing: nested folders aggregate, the root-level photo is not a folder ---
+        let folders = fetch_photo_folders(&db, &roots).unwrap();
+        let names: Vec<&str> = folders.iter().map(|f| f.name.as_str()).collect();
+        assert_eq!(names, vec!["2025 Beijing", "2026 Chengdu"]);
+        assert_eq!(folders[0].count, 2); // b1.png + d1.png (nested)
+        assert_eq!(folders[1].count, 1);
+
+        // --- Folder-filtered sections: "2025 Beijing" yields both its photos ---
+        let filter = make_filter(PhotoFilterType::Folder, Some("2025 Beijing"), &roots);
+        let sections = fetch_sections(&db, &filter, None).unwrap();
+        assert_eq!(sections.len(), 1);
+        let photo_sets = fetch_section_photos(&db, &[sections[0].id.clone()], &filter).unwrap();
+        let total: usize = photo_sets.iter().map(|s| s.photo_ids.len()).sum();
+        assert_eq!(total, 2);
+
+        // --- "2026 Chengdu" yields only its own photo (photos were all imported with the same date) ---
+        let filter = make_filter(PhotoFilterType::Folder, Some("2026 Chengdu"), &roots);
+        let photo_sets = fetch_section_photos(&db, &["2025-01-01".to_string()], &filter).unwrap();
+        assert_eq!(photo_sets[0].photo_ids.len(), 1);
+
+        // --- A folder name that exists under no root matches nothing ---
+        let filter = make_filter(PhotoFilterType::Folder, Some("No Such Folder"), &roots);
+        let sections = fetch_sections(&db, &filter, None).unwrap();
+        assert!(sections.is_empty());
+
+        // --- Folder filter stacks with the favorites filter ---
+        let mut folder_filter = make_filter(PhotoFilterType::Folder, Some("2026 Chengdu"), &roots);
+        folder_filter.filter_type = PhotoFilterType::Favorites;
+        let sections = fetch_sections(&db, &folder_filter, None).unwrap();
+        assert!(sections.is_empty()); // nothing is flagged
+    }
+
+    struct TempDir {
+        path: std::path::PathBuf,
+    }
+
+    impl TempDir {
+        fn new(tag: &str) -> Self {
+            use std::sync::atomic::{AtomicU32, Ordering};
+            static COUNTER: AtomicU32 = AtomicU32::new(0);
+            let n = COUNTER.fetch_add(1, Ordering::SeqCst);
+            let nanos = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos();
+            let path = std::env::temp_dir().join(format!("picturama-photos-{}-{}-{}", tag, nanos, n));
+            std::fs::create_dir_all(&path).unwrap();
+            TempDir { path }
+        }
+
+        fn str(&self) -> String {
+            self.path.to_string_lossy().to_string()
+        }
+    }
+
+    fn path_str(path: &std::path::Path) -> String {
+        path.to_string_lossy().to_string()
+    }
+
+    /// A minimal PNG (valid signature + IHDR; enough for the DB row, no pixel decoding involved here).
+    fn write_png(dir: &std::path::Path, filename: &str, w: u32, h: u32) {
+        let mut bytes: Vec<u8> = Vec::new();
+        bytes.extend_from_slice(&[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]);
+        bytes.extend_from_slice(&[0, 0, 0, 0x0D]);
+        bytes.extend_from_slice(b"IHDR");
+        bytes.extend_from_slice(&w.to_be_bytes());
+        bytes.extend_from_slice(&h.to_be_bytes());
+        bytes.extend_from_slice(&[8, 2, 0, 0, 0]);
+        bytes.extend_from_slice(&[0, 0, 0, 0]);
+        std::fs::write(dir.join(filename), &bytes).unwrap();
+    }
+
+    fn make_filter(filter_type: PhotoFilterType, folder: Option<&str>, photo_roots: &[String]) -> PhotoFilter {
+        PhotoFilter {
+            filter_type,
+            tag_id: None,
+            folder: folder.map(String::from),
+            photo_roots: Some(photo_roots.to_vec()),
+        }
+    }
+
+    fn migrations_dir() -> std::path::PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..").join("migrations")
     }
 }

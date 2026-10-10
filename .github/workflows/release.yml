@@ -1,0 +1,61 @@
+# Builds the Windows installer and attaches it to a GitHub Release draft.
+#
+# Triggered by pushing a `v*` tag. The version in the release name comes from
+# `src-tauri/tauri.conf.json` (keep it in sync with package.json). The release is created as a
+# draft: check the attached installer on the Releases page, then press Publish.
+#
+# libheif is dynamically linked (see DEVELOP.md), so vcpkg has to provide heif.dll and the codec
+# DLLs both at link time and at package time — hence the VCPKG_ROOT / PATH setup below.
+
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install vcpkg and libheif
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git ${{ github.workspace }}\vcpkg
+          & ${{ github.workspace }}\vcpkg\bootstrap-vcpkg.bat
+          & ${{ github.workspace }}\vcpkg\vcpkg.exe install "libheif[core]" --triplet x64-windows
+          "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -Append $env:GITHUB_ENV
+          "${{ github.workspace }}\vcpkg\installed\x64-windows\bin" | Out-File -Append $env:GITHUB_PATH
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Generate licenses.json.gz
+        run: npm run licenses
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: 'Picturama v__VERSION__'
+          releaseBody: 'See the assets to download and install this version.'
+          releaseDraft: true
+          prerelease: false
+          args: ''

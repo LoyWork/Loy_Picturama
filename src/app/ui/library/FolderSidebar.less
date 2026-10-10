@@ -1,0 +1,64 @@
+@import "../../style/variables.less";
+
+.FolderSidebar {
+    display: flex;
+    flex-direction: column;
+    background-color: @blue-grey-900;
+}
+
+.FolderSidebar-body {
+    flex: 1 0 0;
+    overflow-y: auto;
+    padding: 6px 0 12px;
+}
+
+.FolderSidebar-sectionTitle {
+    padding: 14px 14px 4px;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: @blue-grey-300;
+}
+
+.FolderSidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 14px;
+    cursor: pointer;
+    color: @blue-grey-100;
+
+    &:hover {
+        background-color: @blue-grey-800;
+    }
+
+    &.isSelected {
+        background-color: @blue-grey-700;
+        color: @white;
+
+        .FolderSidebar-itemIcon {
+            color: @white;
+        }
+    }
+}
+
+.FolderSidebar-itemIcon {
+    flex: 0 0 auto;
+    margin-right: 8px;
+    color: @blue-grey-300;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+}
+
+.FolderSidebar-itemName {
+    flex: 1 1 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.FolderSidebar-itemCount {
+    flex: 0 0 auto;
+    margin-left: 8px;
+    font-size: 11px;
+    color: @blue-grey-300;
+}

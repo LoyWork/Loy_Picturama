@@ -209,9 +209,15 @@ fn migrate(conn: &Connection, migrations_dir: &Path, force: bool) -> Result<(), 
 /// Returns (raw_up, trimmed_down).
 fn split_migration<'a>(filename: &str, sql: &'a str) -> Result<(&'a str, String), String> {
     // sqlite3-helper uses /^--\s+?down\b/im
+    //
+    // Offsets are tracked over the ORIGINAL string (each line's length including its `\r`, when the
+    // checkout uses CRLF), because the offset slices the original. `str::lines()` would strip the `\r`,
+    // making the accumulated offset drift by one per line and cut the up SQL mid-token.
     let mut byte_offset: usize = 0;
-    for line in sql.lines() {
-        let trimmed = line.trim_start();
+    for line in sql.split('\n') {
+        // `str::lines()` equivalent: the line without its trailing `\r`, for matching.
+        let content = line.strip_suffix('\r').unwrap_or(line);
+        let trimmed = content.trim_start();
         if trimmed.starts_with("--") {
             let after_dashes = trimmed[2..].trim_start();
             if after_dashes.eq_ignore_ascii_case("down")
@@ -219,7 +225,7 @@ fn split_migration<'a>(filename: &str, sql: &'a str) -> Result<(&'a str, String)
                 || after_dashes.to_ascii_lowercase().starts_with("down\t")
             {
                 let up   = &sql[..byte_offset];
-                let rest = &sql[byte_offset + line.len()..];
+                let rest = &sql[byte_offset + content.len()..];
                 // Skip the separator line's newline
                 let down = rest.trim_start_matches('\n').trim_start_matches("\r\n").trim().to_string();
                 return Ok((up, down));

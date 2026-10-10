@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux'
 
-import { PhotoById, TagId, TagById, LoadedPhotoSection, isLoadedPhotoSection, PhotoSectionId, PhotoSectionById, Settings, UiConfig} from 'app/CommonTypes'
+import { PhotoById, TagId, TagById, LoadedPhotoSection, isLoadedPhotoSection, PhotoSectionId, PhotoSectionById, PhotoFolder, Settings, UiConfig} from 'app/CommonTypes'
 import { Action } from 'app/state/ActionType'
 import {
-    INIT, SET_SETTINGS, FETCH_TOTAL_PHOTO_COUNT, FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
+    INIT, SET_SETTINGS, FETCH_TOTAL_PHOTO_COUNT, FETCH_PHOTO_FOLDERS, FETCH_SECTIONS_REQUEST, FETCH_SECTIONS_SUCCESS, FETCH_SECTIONS_FAILURE,
     CHANGE_PHOTOS, EMPTY_TRASH,
     FETCH_TAGS, FORGET_SECTION_PHOTOS, FETCH_SECTION_PHOTOS
 } from 'app/state/actionTypes'
-import { DataState, TagsState, SectionsState } from 'app/state/StateTypes'
+import { DataState, TagsState, FoldersState, SectionsState } from 'app/state/StateTypes'
 import { FetchState } from 'app/UITypes'
 
 
@@ -48,6 +48,28 @@ const tags = (state: TagsState = initialTagsState, action: Action): TagsState =>
             for (const tag of action.payload) {
                 ids.push(tag.id)
                 byId[tag.id] = tag
+            }
+            return { ids, byId }
+        }
+        default:
+            return state
+    }
+}
+
+
+const initialFoldersState: FoldersState = {
+    ids: [],
+    byId: {}
+}
+
+const folders = (state: FoldersState = initialFoldersState, action: Action): FoldersState => {
+    switch (action.type) {
+        case FETCH_PHOTO_FOLDERS: {
+            let ids: string[] = []
+            let byId: { [name: string]: PhotoFolder } = {}
+            for (const folder of action.payload.folders) {
+                ids.push(folder.name)
+                byId[folder.name] = folder
             }
             return { ids, byId }
         }
@@ -212,5 +234,6 @@ export const data = combineReducers<DataState>({
     uiConfig,
     settings,
     tags,
+    folders,
     sections
 })

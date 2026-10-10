@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: 'WebGL non supporté.',
     App_error_noWebGL_desc: `Pour fonctionner, Picturama a besoin d'une carte graphique avec accélération 3D. Veuillez vérifier dans les paramètres du système si vous pouvez activer l'accélération 3D et redémarrer Picturama.`,
+    App_toggleSidebar: "Afficher ou masquer le panneau latéral",
 
     CropModeToolbar_aspect_free: 'Libre',
     CropModeToolbar_aspect_original: 'Original',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Corbeille',
     LibraryFilterButton_filter_tag: 'Avec tag "{0}"',
     LibraryFilterButton_tag_title: 'Avec tag:',
+
+    FolderSidebar_title: "Dossiers",
+    FolderSidebar_all: "Toutes les photos",
 
     LibraryTopBar_emptyTrashQuestion: 'Vous êtes sûr de vouloir vider les corbeilles ?',
     LibraryTopBar_moveToTrash: `Déplacement vers la corbeille du système d'exploitation`,

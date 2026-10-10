@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: 'Нет WebGL',
     App_error_noWebGL_desc: 'Для работы Picturama требуется графическая карта с 3D-ускорением. Пожалуйста, посмотрите в системных настройках, можете ли вы активировать 3D-ускорение и перезапустить Picturama.',
+    App_toggleSidebar: "Показать или скрыть боковую панель",
 
     CropModeToolbar_aspect_free: 'Без учета сторон',
     CropModeToolbar_aspect_original: 'Оригинал',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Корзина',
     LibraryFilterButton_filter_tag: 'С тегом "{0}"',
     LibraryFilterButton_tag_title: 'С тегом:',
+
+    FolderSidebar_title: "Папки",
+    FolderSidebar_all: "Все фото",
 
     LibraryTopBar_emptyTrashQuestion: 'Вы уверены что хотите очистить корзину?',
     LibraryTopBar_moveToTrash: 'Поместить в корзину операционной системы',

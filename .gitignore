@@ -9,3 +9,4 @@ picturama.yml
 
 npm-debug.log
 .DS_Store
+.claude/

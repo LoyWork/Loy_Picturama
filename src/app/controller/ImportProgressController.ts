@@ -2,7 +2,7 @@ import dayjs from 'dayjs'
 
 import { ImportProgress, Tag, PhotoSectionId, isLoadedPhotoSection } from 'app/CommonTypes'
 import { msg } from 'app/i18n/i18n'
-import { fetchSections, fetchTotalPhotoCount } from 'app/controller/PhotoController'
+import { fetchSections, fetchPhotoFolders, fetchTotalPhotoCount } from 'app/controller/PhotoController'
 import { setTags } from 'app/controller/PhotoTagController'
 import { setImportProgressAction } from 'app/state/actions'
 import store from 'app/state/store'
@@ -63,6 +63,7 @@ function updateLibrary() {
         }
 
         fetchTotalPhotoCount()
+        fetchPhotoFolders()
         fetchSections(loadedSectionIds)
     } else {
         // Workaround: If the detail view is active, the detail view would be closed by `fetchSections` since the

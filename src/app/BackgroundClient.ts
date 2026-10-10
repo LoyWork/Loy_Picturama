@@ -9,6 +9,7 @@ import {
     PhotoDetail,
     PhotoExportOptions,
     PhotoFilter,
+    PhotoFolder,
     PhotoId,
     PhotoSection,
     PhotoSectionId,
@@ -144,6 +145,10 @@ const BackgroundClient = {
 
     fetchTotalPhotoCount(): Promise<number> {
         return invokeCommand('fetchTotalPhotoCount')
+    },
+
+    fetchPhotoFolders(): Promise<PhotoFolder[]> {
+        return invokeCommand('fetchPhotoFolders')
     },
 
     fetchSections(filter: PhotoFilter, sectionIdsToKeepLoaded?: PhotoSectionId[]): Promise<PhotoSection[]> {

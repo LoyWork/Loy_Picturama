@@ -10,10 +10,13 @@
     left: 0;
     top: 0;
     right: 0;
-    transition: right @transition-time ease-out;
+    transition: right @transition-time ease-out, left @transition-time ease-out;
 
     .Library.hasRightSidebar & {
         right: @sidebarWidth;
+    }
+    .Library.hasSidebar & {
+        left: @folderSidebarWidth;
     }
 }
 .Library-body {
@@ -27,11 +30,30 @@
     .Library.hasRightSidebar & {
         right: @sidebarWidth;
     }
+    .Library.hasSidebar & {
+        left: @folderSidebarWidth;
+    }
 }
 .Library-bottomBar {
     position: absolute;
     bottom: 0;
     left: 0;
+
+    .Library.hasSidebar & {
+        left: @folderSidebarWidth;
+    }
+}
+.Library-folderSidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -@folderSidebarWidth;
+    width: @folderSidebarWidth;
+    transition: left @transition-time ease-out;
+
+    .Library.hasSidebar & {
+        left: 0;
+    }
 }
 .Library-rightSidebar {
     position: absolute;

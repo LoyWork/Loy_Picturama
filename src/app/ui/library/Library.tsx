@@ -10,11 +10,12 @@ import { setDetailPhotoById } from 'app/controller/DetailController'
 import { defaultLibrarySelectionController, LibrarySelectionController } from 'app/controller/LibrarySelectionController'
 import { GetGridLayoutFunction, getGridLayoutAndUpdateStore, createThumbnail } from 'app/controller/LibraryController'
 import { PhotoActionController, defaultPhotoActionController } from 'app/controller/PhotoActionController'
-import { fetchTotalPhotoCount, fetchSections, getThumbnailSrc, onPhotosTrashed } from 'app/controller/PhotoController'
+import { fetchTotalPhotoCount, fetchSections, fetchPhotoFolders, getThumbnailSrc, onPhotosTrashed } from 'app/controller/PhotoController'
 import { fetchTags, setPhotoTags } from 'app/controller/PhotoTagController'
 import { showError } from 'app/ErrorPresenter'
 import { msg } from 'app/i18n/i18n'
-import { setGridRowHeightAction, setShowInfoAction } from 'app/state/actions'
+import { setGridRowHeightAction, setShowInfoAction, setShowSidebarAction } from 'app/state/actions'
+import store from 'app/state/store'
 import { getInfoPhoto, getPreselectionRange, getTagTitles } from 'app/state/selectors'
 import { AppState, InfoPhotoData, PhotoLibraryPosition, PreselectionRange, SelectionState } from 'app/state/StateTypes'
 import PhotoInfo from 'app/ui/info/PhotoInfo'
@@ -26,6 +27,7 @@ import { bindMany } from 'app/util/LangUtil'
 
 import LibraryTopBar from './LibraryTopBar'
 import LibraryBottomBar from './LibraryBottomBar'
+import FolderSidebar from './FolderSidebar'
 import Grid from './Grid'
 
 import './Library.less'
@@ -56,6 +58,10 @@ interface StateProps {
     selection: SelectionState | null
     preselectionRange: PreselectionRange | null
     showInfo: boolean
+    hasFolders: boolean
+    showSidebar: boolean
+    hasSidebarContent: boolean
+    toggleSidebar: () => void
     infoPhoto?: Photo
     infoPhotoData?: InfoPhotoData
     tags: string[]
@@ -67,6 +73,7 @@ interface StateProps {
 
 interface DispatchProps {
     fetchTotalPhotoCount: () => void
+    fetchPhotoFolders: () => void
     fetchSections: () => void
     fetchTags(): void
     getGridLayout: GetGridLayoutFunction
@@ -93,6 +100,7 @@ export class Library extends React.Component<Props> {
         const { props } = this
         props.fetchTotalPhotoCount()
         props.fetchSections()
+        props.fetchPhotoFolders()
         props.fetchTags()
     }
 
@@ -163,9 +171,10 @@ export class Library extends React.Component<Props> {
         return (
             <div
                 ref="library"
-                className={classNames(props.className, 'Library', { 'bp3-dark': showGrid, hasGrid: showGrid, hasRightSidebar: props.showInfo })}
+                className={classNames(props.className, 'Library', { 'bp3-dark': showGrid, hasGrid: showGrid, hasRightSidebar: props.showInfo, hasSidebar: props.showSidebar && props.hasSidebarContent })}
                 style={props.style}
             >
+                <FolderSidebar className="Library-folderSidebar"/>
                 <LibraryTopBar
                     className="Library-topBar"
                     isActive={props.isActive}
@@ -246,6 +255,9 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
             selection: state.library.selection,
             preselectionRange: getPreselectionRange(state),
             showInfo: state.info.showInLibrary,
+            hasFolders: state.data.folders.ids.length !== 0,
+            showSidebar: state.navigation.showSidebar,
+            hasSidebarContent: true,
             infoPhoto: getInfoPhoto(state),
             infoPhotoData: state.info.photoData,
             tags: getTagTitles(state),
@@ -257,6 +269,7 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
     },
     dispatch => ({
         fetchTotalPhotoCount,
+        fetchPhotoFolders,
         fetchSections,
         fetchTags,
         getGridLayout: getGridLayoutAndUpdateStore,
@@ -264,6 +277,9 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
         createThumbnail,
         setDetailPhotoById,
         setPhotoTags,
+        toggleSidebar() {
+            dispatch(setShowSidebarAction(!store.getState().navigation.showSidebar))
+        },
         setShowInfo(showInfo: boolean) {
             dispatch(setShowInfoAction('library', showInfo))
         },

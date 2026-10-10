@@ -16,6 +16,7 @@ export default {
 
     App_error_noWebGL_title: 'No WebGL',
     App_error_noWebGL_desc: 'Picturama needs a graphic card with 3D acceleration in order to function. Please have a look in the system settings whether you can activate 3D acceleration and restart Picturama.',
+    App_toggleSidebar: 'Show or hide the sidebar',
 
     CropModeToolbar_aspect_free: 'Free',
     CropModeToolbar_aspect_original: 'Original',
@@ -87,6 +88,9 @@ export default {
     LibraryFilterButton_filter_trash: 'Trash',
     LibraryFilterButton_filter_tag: 'With tag "{0}"',
     LibraryFilterButton_tag_title: 'With tag:',
+
+    FolderSidebar_title: 'Folders',
+    FolderSidebar_all: 'All photos',
 
     LibraryTopBar_emptyTrashQuestion: 'Are you sure you want to empty the trash?',
     LibraryTopBar_moveToTrash: 'Move to trash of operating system',

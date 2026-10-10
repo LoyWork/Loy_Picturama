@@ -1,4 +1,4 @@
-import { PhotoId, TagId, TagById, PhotoSectionId, PhotoSectionById, Settings, UiConfig, PhotoDetail, PhotoWork, ImportProgress, PhotoFilter, PhotoExportOptions, PhotoExportProgress, MetaData, ExifData, Photo} from 'app/CommonTypes'
+import { PhotoId, TagId, TagById, PhotoSectionId, PhotoSectionById, Settings, UiConfig, PhotoDetail, PhotoWork, ImportProgress, PhotoFilter, PhotoExportOptions, PhotoExportProgress, MetaData, ExifData, Photo, PhotoFolder} from 'app/CommonTypes'
 import { FetchState } from 'app/UITypes'
 
 
@@ -18,6 +18,8 @@ export type NavigationState = {
     hasWebGLSupport: boolean
     isFullScreen: boolean
     isShiftPressed: boolean
+    /** Whether the library's left sidebar (filters + folders) is shown. */
+    showSidebar: boolean
     mainView: MainViewState
 }
 
@@ -28,6 +30,7 @@ export type DataState = {
     readonly uiConfig: UiConfig
     readonly settings: Settings
     readonly tags: TagsState
+    readonly folders: FoldersState
     readonly sections: SectionsState
 }
 
@@ -89,6 +92,15 @@ export type SectionPreselection = 'all' | 'none' | { selected: boolean, startPho
 export type TagsState = {
     readonly ids: TagId[]
     readonly byId: TagById
+}
+
+/**
+ * The top-level folders inside the photo roots (for the folder sidebar). Fetched once and refreshed
+ * like the photo count - it does not change with the current library filter.
+ */
+export type FoldersState = {
+    readonly ids: string[]
+    readonly byId: { [name: string]: PhotoFolder }
 }
 
 export type SectionsState = {

@@ -11,7 +11,6 @@ import { defaultGridRowHeight } from 'app/UiConstants'
 import { getGridLayoutWithoutStoreUpdate } from 'app/controller/LibraryController'
 import { InfoPhotoDataState } from 'app/state/StateTypes'
 import { Library, Props } from 'app/ui/library/Library'
-import { LibraryFilterButton } from 'app/ui/library/LibraryFilterButton'
 import SelectionSummary from 'app/ui/library/SelectionSummary'
 import ImportProgressButton from 'app/ui/ImportProgressButton'
 
@@ -47,6 +46,10 @@ function createDefaultProps(context: TestContext): Props {
         selection: null,
         preselectionRange: null,
         showInfo: false,
+        hasFolders: false,
+        showSidebar: true,
+        hasSidebarContent: true,
+        toggleSidebar: action('toggleSidebar'),
         infoPhoto: undefined,
         infoPhotoData: undefined,
         tags: [ 'Flower', 'Panorama' ],
@@ -56,6 +59,7 @@ function createDefaultProps(context: TestContext): Props {
 
         fetchTotalPhotoCount: action('fetchTotalPhotoCount'),
         fetchSections: action('fetchSections'),
+        fetchPhotoFolders: action('fetchPhotoFolders'),
         fetchTags: action('fetchTags'),
         getGridLayout: getGridLayoutWithoutStoreUpdate,
         getThumbnailSrc: (photo: Photo) => convertFileSrc(getMasterPath(photo)),
@@ -82,26 +86,11 @@ function createDefaultProps(context: TestContext): Props {
 function renderTopBarLeftItem(libraryFilter: PhotoFilter): JSX.Element {
     return (
         <>
-            <LibraryFilterButton
-                libraryFilter={libraryFilter}
-                tagIds={[ 1, 2 ]}
-                tagById={{
-                    1: {
-                        created_at: 1565357205167,
-                        id: 1,
-                        slug: 'flower',
-                        title: 'Flower',
-                        updated_at: null
-                    },
-                    2: {
-                        created_at: 1565357205167,
-                        id: 2,
-                        slug: 'panorama',
-                        title: 'Panorama',
-                        updated_at: null
-                    }
-                }}
-                setLibraryFilter={action('setLibraryFilter')}
+            <Button
+                minimal={true}
+                icon='drawer-left'
+                active={true}
+                onClick={action('toggleSidebar')}
             />
             <Button
                 minimal={true}
