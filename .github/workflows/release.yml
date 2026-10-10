@@ -46,6 +46,12 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      # `npm run licenses` runs `cargo metadata --offline`, which needs the crates in the local
+      # registry cache — a fresh CI machine has none, so fetch them first.
+      - name: Fetch Rust dependencies
+        run: cargo fetch --locked
+        working-directory: src-tauri
+
       - name: Generate licenses.json.gz
         run: npm run licenses
 
