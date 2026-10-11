@@ -60,10 +60,10 @@ Prerequirements:
     - Linux: `libwebkit2gtk-4.1-dev libssl-dev libgtk-3-dev`
   - Install `libheif` (native HEIC/HEIF decoding):
     - Mac OS: `brew install libheif`
-    - Windows: `vcpkg install libheif[core]`, then set `VCPKG_ROOT` to your vcpkg directory and add
-      `%VCPKG_ROOT%\installed\x64-windows\bin` to `PATH`, so the dev build finds `heif.dll` and the codec DLLs at
-      runtime. We link libheif dynamically: `src-tauri/.cargo/config.toml` sets `VCPKGRS_DYNAMIC=1` so `libheif-sys`
-      looks in the `x64-windows` triplet rather than its default `x64-windows-static-md`.
+    - Windows: `vcpkg install libheif[core] --triplet x64-windows-static-md`, then set `VCPKG_ROOT` to your vcpkg
+      directory and `VCPKGRS_TRIPLET` to `x64-windows-static-md`. This statically links libheif and its codecs into
+      Picturama while retaining the normal dynamically linked MSVC runtime (bundled by Tauri), so installed builds
+      do not require `heif.dll` or codec DLLs next to `Picturama.exe`.
     - Linux (Debian/Ubuntu): `sudo apt install libheif-dev`
   - Install Tauri CLI: `cargo install tauri-cli --version "^2"`
 
@@ -106,8 +106,8 @@ Rust:
 
 Rust tests live inline as `#[cfg(test)] mod tests` in the source files, not in a separate tree — that is
 where most of the real test coverage is. Several of them read real photos from `submodules/test-data/`, so
-`git submodule update --init --recursive` is a prerequisite. On Windows they additionally need the vcpkg bin
-directory on `PATH` to find `heif.dll`.
+`git submodule update --init --recursive` is a prerequisite. On Windows, set `VCPKG_ROOT` and
+`VCPKGRS_TRIPLET=x64-windows-static-md` as described above before building or running the tests.
 
 
 Architecture

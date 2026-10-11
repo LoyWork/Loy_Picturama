@@ -41,7 +41,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg", "nsis", "appimage"],
+    "targets": ["nsis"],
     "resources": {
       "../migrations/*": "app/migrations/",
       "../licenses.json.gz": "app/licenses.json.gz"
@@ -53,8 +53,8 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "macOS": {
-      "minimumSystemVersion": "11.0"
+    "windows": {
+      "bundleVCRuntime": true
     }
   }
 }
