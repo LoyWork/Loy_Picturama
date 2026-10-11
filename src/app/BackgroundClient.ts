@@ -3,6 +3,7 @@ import { invoke } from '@tauri-apps/api/core'
 import {
     DecodedHeifImage,
     DeletePhotosResult,
+    DuplicatePhotoGroup,
     EmptyTrashResult,
     ExifData,
     MetaData,
@@ -146,6 +147,10 @@ const BackgroundClient = {
 
     fetchTotalPhotoCount(): Promise<number> {
         return invokeCommand('fetchTotalPhotoCount')
+    },
+
+    scanDuplicatePhotos(): Promise<DuplicatePhotoGroup[]> {
+        return invokeCommand('scanDuplicatePhotos')
     },
 
     fetchPhotoFolders(): Promise<PhotoFolder[]> {

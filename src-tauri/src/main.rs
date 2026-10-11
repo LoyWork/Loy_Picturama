@@ -74,6 +74,7 @@ fn main() {
             commands::import::cancel_import,
             // Photos
             commands::photos::fetch_total_photo_count,
+            commands::photos::scan_duplicate_photos,
             commands::photos::fetch_photo_folders,
             commands::photos::fetch_sections,
             commands::photos::fetch_section_photos,

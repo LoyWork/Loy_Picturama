@@ -28,3 +28,12 @@ addSection('Settings')
             {...defaultProps}
         />
     ))
+    .add('many photo folders', context => (
+        <SettingsPane
+            {...defaultProps}
+            settings={{
+                photoDirs: Array.from({ length: 20 }, (_, index) =>
+                    `/Users/me/Pictures/Photo collection ${index + 1}`),
+            }}
+        />
+    ))

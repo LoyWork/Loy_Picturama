@@ -179,6 +179,13 @@ export default {
     Settings_photoDirs: 'Složky ve kterých budou vyhledány fotografie:',
     Settings_addPhotoDir: 'Přidat složku fotografií',
     Settings_startScan: 'Vyhledat fotografie',
+    Settings_duplicatesTitle: 'Duplicitní fotografie',
+    Settings_duplicatesDescription: 'Vyhledá importované fotografie se zcela shodným obsahem. Soubory se nezmění ani neodstraní.',
+    Settings_scanDuplicates: 'Vyhledat duplicitní fotografie',
+    Settings_scanningDuplicates: 'Vyhledávám duplicitní fotografie…',
+    Settings_noDuplicates: 'Nebyly nalezeny žádné shodné soubory.',
+    Settings_duplicateGroupsFound: 'Nalezeno skupin duplicitních fotografií: {0}.',
+    Settings_duplicateGroup: 'Skupina {0}: {1} shodné soubory · {2}',
 
     LicenseDialog_intro: 'Picturama je svobodný a otevřený software.',
     LicenseDialog_libraries: 'Picturama používá následující knihovny od jiných autorů:',

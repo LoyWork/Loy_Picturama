@@ -259,6 +259,15 @@ pub struct EmptyTrashResult {
     pub updated_tags: Option<Vec<Tag>>,
 }
 
+/// Files whose complete byte content is identical. Paths, rather than photo ids, are returned so the
+/// duplicate report remains useful when the copies have unrelated names or live in different folders.
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DuplicatePhotoGroup {
+    pub file_size: u64,
+    pub paths: Vec<String>,
+}
+
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

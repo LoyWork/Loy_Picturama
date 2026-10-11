@@ -11,6 +11,24 @@ pub fn fetch_total_photo_count(db: &DbHandle) -> Result<u32, String> {
         .map_err(|e| e.to_string())
 }
 
+/// Every non-trashed master file currently in the library. Duplicate detection deliberately works
+/// from these database-owned paths instead of accepting arbitrary filesystem paths from the web view.
+pub fn fetch_active_photo_paths(db: &DbHandle) -> Result<Vec<String>, String> {
+    let conn = db.lock().unwrap();
+    let mut stmt = conn
+        .prepare("SELECT master_dir, master_filename FROM photos WHERE trashed = 0")
+        .map_err(|e| e.to_string())?;
+    let rows = stmt
+        .query_map([], |row| {
+            let dir: String = row.get(0)?;
+            let filename: String = row.get(1)?;
+            Ok(format!("{}/{}", dir, filename))
+        })
+        .map_err(|e| e.to_string())?;
+    rows.collect::<rusqlite::Result<Vec<_>>>()
+        .map_err(|e| e.to_string())
+}
+
 // ---------------------------------------------------------------------------
 // Folders (top-level directories inside the photo roots, for the sidebar)
 // ---------------------------------------------------------------------------

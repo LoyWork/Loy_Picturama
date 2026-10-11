@@ -29,8 +29,58 @@
     overflow-y: auto;
 }
 
+.SettingsPane-photoDirs.List {
+    // Show substantially more scan folders while keeping the list usable in the minimum-height window.
+    max-height: clamp(240px, 45vh, 420px);
+}
+
 .SettingsPane-addPhotoDir {
     margin: 10px 0;
+}
+
+.SettingsPane-duplicates {
+    margin-top: 28px;
+
+    h2 {
+        margin-bottom: 8px;
+    }
+
+    > p {
+        margin-top: 0;
+    }
+}
+
+.SettingsPane-scanDuplicates {
+    margin: 4px 0 10px;
+}
+
+.SettingsPane-noDuplicates {
+    margin-top: 10px !important;
+}
+
+.SettingsPane-duplicateResults {
+    max-height: clamp(260px, 45vh, 480px);
+    margin-top: 10px;
+    padding-right: 6px;
+    overflow-y: auto;
+}
+
+.SettingsPane-duplicateGroup {
+    margin: 8px 0;
+    padding: 10px 12px;
+    background: fade(white, 65%);
+    border-radius: 3px;
+}
+
+.SettingsPane-duplicateGroupTitle {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.SettingsPane-duplicatePath {
+    padding: 2px 0;
+    overflow-wrap: anywhere;
+    user-select: text;
 }
 
 .SettingsPane-scan {

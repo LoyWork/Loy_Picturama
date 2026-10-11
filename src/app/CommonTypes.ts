@@ -222,6 +222,11 @@ export interface DeletePhotosResult {
     failed: string[]
 }
 
+export interface DuplicatePhotoGroup {
+    fileSize: number
+    paths: string[]
+}
+
 
 export interface MetaData {
     imgWidth?:     number

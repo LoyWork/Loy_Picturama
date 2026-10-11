@@ -179,6 +179,13 @@ export default {
     Settings_photoDirs: 'Carpetas para escanear imágenes:',
     Settings_addPhotoDir: 'Añadir carpeta de fotos',
     Settings_startScan: 'Scanear en busca de imágenes',
+    Settings_duplicatesTitle: 'Fotos duplicadas',
+    Settings_duplicatesDescription: 'Busca fotos importadas con exactamente el mismo contenido. Los archivos no se modifican ni se eliminan.',
+    Settings_scanDuplicates: 'Buscar fotos duplicadas',
+    Settings_scanningDuplicates: 'Buscando fotos duplicadas…',
+    Settings_noDuplicates: 'No se encontraron archivos idénticos.',
+    Settings_duplicateGroupsFound: 'Se encontraron {0} grupos de fotos duplicadas.',
+    Settings_duplicateGroup: 'Grupo {0}: {1} archivos idénticos · {2}',
 
     LicenseDialog_intro: 'Picturama es software libre y de código abierto.',
     LicenseDialog_libraries: 'Picturama utiliza las siguientes bibliotecas escritas por otras personas:',

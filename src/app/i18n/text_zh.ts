@@ -179,6 +179,13 @@ export default {
     Settings_photoDirs: '要扫描图像的文件夹：',
     Settings_addPhotoDir: '添加照片文件夹',
     Settings_startScan: '扫描图像',
+    Settings_duplicatesTitle: '重复图片',
+    Settings_duplicatesDescription: '检查已导入图片的文件内容是否完全相同；不会修改或删除文件。',
+    Settings_scanDuplicates: '扫描重复图片',
+    Settings_scanningDuplicates: '正在扫描重复图片…',
+    Settings_noDuplicates: '没有找到内容相同的文件。',
+    Settings_duplicateGroupsFound: '找到 {0} 组重复图片。',
+    Settings_duplicateGroup: '第 {0} 组：{1} 个相同文件 · {2}',
 
     LicenseDialog_intro: 'Picturama 是自由的开源软件。',
     LicenseDialog_libraries: 'Picturama 使用了以下由他人编写的库：',

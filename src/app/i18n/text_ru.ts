@@ -179,6 +179,13 @@ export default {
     Settings_photoDirs: 'папки для сканирования на наличие изображений:',
     Settings_addPhotoDir: 'Добавить папку с фотографиями',
     Settings_startScan: 'Сканировать на наличие изображений',
+    Settings_duplicatesTitle: 'Дубликаты фотографий',
+    Settings_duplicatesDescription: 'Ищет импортированные фотографии с полностью одинаковым содержимым. Файлы не изменяются и не удаляются.',
+    Settings_scanDuplicates: 'Найти дубликаты фотографий',
+    Settings_scanningDuplicates: 'Поиск дубликатов фотографий…',
+    Settings_noDuplicates: 'Одинаковые файлы не найдены.',
+    Settings_duplicateGroupsFound: 'Найдено групп дубликатов: {0}.',
+    Settings_duplicateGroup: 'Группа {0}: одинаковых файлов — {1} · {2}',
 
     LicenseDialog_intro: 'Picturama — свободное программное обеспечение с открытым исходным кодом.',
     LicenseDialog_libraries: 'Picturama использует следующие библиотеки других авторов:',

@@ -179,6 +179,13 @@ export default {
     Settings_photoDirs: 'Folders to scan for images:',
     Settings_addPhotoDir: 'Add photo folder',
     Settings_startScan: 'Scan for images',
+    Settings_duplicatesTitle: 'Duplicate photos',
+    Settings_duplicatesDescription: 'Finds imported photos with exactly the same file contents. Files are not changed or deleted.',
+    Settings_scanDuplicates: 'Scan for duplicate photos',
+    Settings_scanningDuplicates: 'Scanning for duplicate photos…',
+    Settings_noDuplicates: 'No identical files found.',
+    Settings_duplicateGroupsFound: '{0} duplicate groups found.',
+    Settings_duplicateGroup: 'Group {0}: {1} identical files · {2}',
 
     LicenseDialog_intro: 'Picturama is free and open source.',
     LicenseDialog_libraries: 'Picturama uses the following libraries written by others:',
