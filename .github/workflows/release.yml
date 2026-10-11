@@ -39,9 +39,10 @@ jobs:
         run: |
           git clone https://github.com/microsoft/vcpkg.git ${{ github.workspace }}\vcpkg
           & ${{ github.workspace }}\vcpkg\bootstrap-vcpkg.bat
-          & ${{ github.workspace }}\vcpkg\vcpkg.exe install "libheif[core]" --triplet x64-windows-static-md
+          & ${{ github.workspace }}\vcpkg\vcpkg.exe install "libheif[core]" --triplet x64-windows-static
           "VCPKG_ROOT=${{ github.workspace }}\vcpkg" | Out-File -Append $env:GITHUB_ENV
-          "VCPKGRS_TRIPLET=x64-windows-static-md" | Out-File -Append $env:GITHUB_ENV
+          "VCPKGRS_TRIPLET=x64-windows-static" | Out-File -Append $env:GITHUB_ENV
+          "RUSTFLAGS=-C target-feature=+crt-static" | Out-File -Append $env:GITHUB_ENV
 
       - name: Install frontend dependencies
         run: npm ci

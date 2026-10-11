@@ -31,7 +31,7 @@ imagesize          = "0.13"
 indexmap           = { version = "2", features = ["serde"] }
 # EXIF reader/writer (the `exif` crate).
 kamadak-exif       = "0.6"
-# Native HEIC/HEIF decode via libheif. Windows builds use vcpkg's x64-windows-static-md triplet so libheif and
+# Native HEIC/HEIF decode via libheif. Windows builds use vcpkg's x64-windows-static triplet so libheif and
 # its codecs are part of Picturama.exe.
 # libheif-rs 0.20 is the newest release that still binds libheif-sys ^1.14 (libheif ~1.14/1.15) while
 # exposing the modern `LibHeif` API. libheif-sys is pinned to 1.14.4 so it links against the system
