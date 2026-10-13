@@ -68,6 +68,8 @@ fn main() {
             // Directory selection
             commands::fs::select_scan_directories,
             commands::fs::select_export_directory,
+            commands::fs::select_wallpaper_file,
+            commands::fs::wallpaper_file_exists,
             // Import / scan
             commands::import::start_import,
             commands::import::toggle_import_paused,

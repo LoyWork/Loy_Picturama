@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
 import { Button, MaybeElement, NonIdealState } from '@blueprintjs/core'
 import classNames from 'classnames'
+import { convertFileSrc } from '@tauri-apps/api/core'
 
 import BackgroundClient from 'app/BackgroundClient'
 import { ImportProgress } from 'app/CommonTypes'
@@ -22,6 +23,8 @@ import store from 'app/state/store'
 import { AppState, MainViewState } from 'app/state/StateTypes'
 
 import WindowControls from './WindowControls'
+
+import { defaultBlurStrength } from 'app/style/variables'
 
 import './App.less'
 
@@ -43,6 +46,8 @@ interface StateProps {
     showExport: boolean
     showSidebar: boolean
     hasSidebarContent: boolean
+    wallpaperPath: string | null
+    blurStrength: number
 }
 
 interface DispatchProps {
@@ -65,6 +70,21 @@ class App extends React.Component<Props> {
         if (this.props.globalCommands) {
             this.commandGroupId = addCommandGroup(this.props.globalCommands)
         }
+        this.applyAppearance()
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        if (prevProps.wallpaperPath !== this.props.wallpaperPath ||
+            prevProps.blurStrength !== this.props.blurStrength)
+        {
+            this.applyAppearance()
+        }
+    }
+
+    /** Writes the appearance settings to CSS variables on the app root. */
+    private applyAppearance() {
+        const rootStyle = document.documentElement.style
+        rootStyle.setProperty('--glass-blur-px', `${this.props.blurStrength}px`)
     }
 
     componentWillUnmount() {
@@ -136,6 +156,13 @@ class App extends React.Component<Props> {
         return (
             <ErrorBoundary className='bp3-dark'>
                 <div className={classNames('App', { hasNativeTrafficLightButtons: props.hasNativeTrafficLightButtons, hasWindowsButtons: props.showWindowsButtons })}>
+                    {props.wallpaperPath
+                        ? <div
+                            className='App-wallpaper App-wallpaper-image'
+                            style={{ backgroundImage: `url("${convertFileSrc(props.wallpaperPath)}")` }}
+                        />
+                        : <div className='App-wallpaper'/>
+                    }
                     <Library
                         className='App-container'
                         topBarLeftItem={libraryTopBarLeftItem}
@@ -178,6 +205,8 @@ const Connected = connect<StateProps, DispatchProps, OwnProps, AppState>(
             showExport: !!state.export,
             showSidebar: state.navigation.showSidebar,
             hasSidebarContent: true,
+            wallpaperPath: state.data.settings.appearance?.wallpaperPath ?? null,
+            blurStrength: state.data.settings.appearance?.blurStrength ?? defaultBlurStrength,
         }
     },
     dispatch => ({

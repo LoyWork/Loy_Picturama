@@ -175,6 +175,7 @@ export default {
     SelectionSummary_clearSelection: 'Zrušit výběr',
 
     Settings_title: 'Nastavení',
+    Settings_scanDirsTitle: 'Složky obrázků',
     Settings_selectPhotoDirs: 'Vyberte prosím složky, ve kterých budou vyhledány fotografie.',
     Settings_photoDirs: 'Složky ve kterých budou vyhledány fotografie:',
     Settings_addPhotoDir: 'Přidat složku fotografií',
@@ -186,6 +187,12 @@ export default {
     Settings_noDuplicates: 'Nebyly nalezeny žádné shodné soubory.',
     Settings_duplicateGroupsFound: 'Nalezeno skupin duplicitních fotografií: {0}.',
     Settings_duplicateGroup: 'Skupina {0}: {1} shodné soubory · {2}',
+
+    Settings_appearanceTitle: 'Appearance',
+    Settings_wallpaperLabel: 'Background image behind the interface:',
+    Settings_wallpaperChoose: 'Choose image…',
+    Settings_wallpaperReset: 'Use default background',
+    Settings_blurLabel: 'Frosted glass blur: {0} px',
 
     LicenseDialog_intro: 'Picturama je svobodný a otevřený software.',
     LicenseDialog_libraries: 'Picturama používá následující knihovny od jiných autorů:',

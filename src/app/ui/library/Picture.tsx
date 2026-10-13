@@ -9,7 +9,7 @@ import { LibrarySelectionController } from 'app/controller/LibrarySelectionContr
 import { PhotoActionController } from 'app/controller/PhotoActionController'
 import { formatCommandLabel } from 'app/controller/HotkeyController'
 import { msg } from 'app/i18n/i18n'
-import { selectionButtonSize, toolbarHeight } from 'app/style/variables'
+import { selectionButtonSize } from 'app/style/variables'
 import { JustifiedLayoutBox } from 'app/UITypes'
 import RedCheckCircle from 'app/ui/widget/icon/RedCheckCircle'
 import { showPhotoContextMenu } from 'app/ui/widget/PhotoContextMenu'
@@ -108,7 +108,7 @@ export default class Picture extends React.Component<Props, State> {
             if (scrollParentElem) {
                 const scrollParentRect = scrollParentElem.getBoundingClientRect()
                 const extraSpacingTop = 10
-                const extraSpacingBottom = 10 + toolbarHeight
+                const extraSpacingBottom = 10
                 if (rect.bottom > scrollParentRect.bottom) {
                     scrollParentElem.scrollTop += rect.bottom - scrollParentRect.bottom + extraSpacingBottom
                 } else if (rect.top < scrollParentRect.top) {

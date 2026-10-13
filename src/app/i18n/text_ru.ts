@@ -175,6 +175,7 @@ export default {
     SelectionSummary_clearSelection: 'Отменить выбор',
 
     Settings_title: 'Настройки',
+    Settings_scanDirsTitle: 'Папки с изображениями',
     Settings_selectPhotoDirs: 'Выберите папки для сканирования на наличие изображений.',
     Settings_photoDirs: 'папки для сканирования на наличие изображений:',
     Settings_addPhotoDir: 'Добавить папку с фотографиями',
@@ -186,6 +187,12 @@ export default {
     Settings_noDuplicates: 'Одинаковые файлы не найдены.',
     Settings_duplicateGroupsFound: 'Найдено групп дубликатов: {0}.',
     Settings_duplicateGroup: 'Группа {0}: одинаковых файлов — {1} · {2}',
+
+    Settings_appearanceTitle: 'Appearance',
+    Settings_wallpaperLabel: 'Background image behind the interface:',
+    Settings_wallpaperChoose: 'Choose image…',
+    Settings_wallpaperReset: 'Use default background',
+    Settings_blurLabel: 'Frosted glass blur: {0} px',
 
     LicenseDialog_intro: 'Picturama — свободное программное обеспечение с открытым исходным кодом.',
     LicenseDialog_libraries: 'Picturama использует следующие библиотеки других авторов:',

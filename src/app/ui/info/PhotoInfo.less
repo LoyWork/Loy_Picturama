@@ -5,13 +5,20 @@
 .PhotoInfo {
     display: flex;
     flex-direction: column;
-    background-color: @blue-grey-900;
+    background: @glassBg;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    border-left: 1px solid @glassBorder;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.22);
 }
 
 .PhotoInfo-topBar {
     flex: 0 0 auto;
     padding-left: @paddingX - 1px;
-    border-left: 1px solid @blue-grey-900;
+    border-left: none;
+    background: transparent;
+    box-shadow: none;
+    border-bottom: none;
 }
 
 .PhotoInfo-body {

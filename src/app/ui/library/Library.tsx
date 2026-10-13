@@ -19,7 +19,6 @@ import store from 'app/state/store'
 import { getInfoPhoto, getPreselectionRange, getTagTitles } from 'app/state/selectors'
 import { AppState, InfoPhotoData, PhotoLibraryPosition, PreselectionRange, SelectionState } from 'app/state/StateTypes'
 import PhotoInfo from 'app/ui/info/PhotoInfo'
-import LogoDecoration from 'app/ui/widget/LogoDecoration'
 import { keySymbols } from 'app/UiConstants'
 import { FetchState } from 'app/UITypes'
 import CancelablePromise from 'app/util/CancelablePromise'
@@ -31,9 +30,6 @@ import FolderSidebar from './FolderSidebar'
 import Grid from './Grid'
 
 import './Library.less'
-
-
-const nonIdealStateMaxWidth = 400
 
 
 interface OwnProps {
@@ -93,7 +89,7 @@ export class Library extends React.Component<Props> {
 
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'toggleShowInfo', 'getNonIdealStateDecorationWidth')
+        bindMany(this, 'toggleShowInfo')
     }
 
     componentDidMount() {
@@ -107,10 +103,6 @@ export class Library extends React.Component<Props> {
     private toggleShowInfo() {
         const { props } = this
         props.setShowInfo(!props.showInfo)
-    }
-
-    private getNonIdealStateDecorationWidth(containerWidth: number): number {
-        return (containerWidth - nonIdealStateMaxWidth) / 2 - 20
     }
 
     render() {
@@ -189,10 +181,7 @@ export class Library extends React.Component<Props> {
                 />
                 <div className="Library-body">
                     {nonIdealStateProps &&
-                        <>
-                            <LogoDecoration getDecorationWidth={this.getNonIdealStateDecorationWidth}/>
-                            <NonIdealState {...nonIdealStateProps}/>
-                        </>
+                        <NonIdealState {...nonIdealStateProps}/>
                     }
                     {showGrid &&
                         <Grid

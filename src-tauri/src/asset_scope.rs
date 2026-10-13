@@ -25,7 +25,7 @@ pub fn allow_photo_dirs(app: &AppHandle, photo_dirs: &[String]) {
     }
 }
 
-fn allow_directory(app: &AppHandle, dir: &Path) {
+pub fn allow_directory(app: &AppHandle, dir: &Path) {
     grant(app, dir);
 
     // The scope matches against the canonicalised request path, so a directory reached through a symlink

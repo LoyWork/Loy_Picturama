@@ -2,7 +2,11 @@
 
 
 .List {
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.55);
+    -webkit-backdrop-filter: @blurOverlay;
+    backdrop-filter: @blurOverlay;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
     overflow-y: auto;
     max-height: 120px;
 }
@@ -10,15 +14,16 @@
 .List-row {
     display: flex;
     align-items: center;
+    transition: background-color 0.15s ease;
 
     &:hover {
-        background-color: @blue-grey-200;
+        background-color: rgba(0, 0, 0, 0.05);
     }
 }
 
 .List-item {
     flex: 1 1 100%;
-    padding: 2px 4px;
+    padding: 2px 8px;
 }
 
 .List-removeItem {

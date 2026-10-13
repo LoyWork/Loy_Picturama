@@ -5,11 +5,13 @@
     align-items: center;
     height: @toolbarHeight;
     z-index: 2;
-    background: @blue-grey-800;
+    background: @glassBg;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
     color: @blue-grey-100;
-    border-top: 1px solid @blue-grey-900;
-    border-bottom: 1px solid transparent;
-
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid @glassBorder;
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
     padding: 0 4px;
     padding-right: 4px;
     transition: all @transition-time ease-out;
@@ -20,7 +22,7 @@
 
     &.isTopBar {
         border-top: 1px solid transparent;
-        border-bottom: 1px solid @blue-grey-900;
+        border-bottom: 1px solid @glassBorder;
     }
     .App.hasNativeTrafficLightButtons &.isTopBar.isLeft {
         padding-left: @nativeTrafficLightButtons;

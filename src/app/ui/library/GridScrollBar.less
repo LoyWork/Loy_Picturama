@@ -15,9 +15,15 @@
 
 .GridScrollBar-thumb {
     position: absolute;
-    left: 0;
-    width: 100%;
-    background-color: @blue-grey-800;
+    left: 12px;
+    width: 8px;
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.28);
+    transition: background-color 0.2s ease;
+}
+
+.GridScrollBar:hover .GridScrollBar-thumb {
+    background-color: rgba(255, 255, 255, 0.45);
 }
 
 .GridScrollBar-scaleItem {
@@ -66,8 +72,10 @@
     bottom: @hintBarHeight;
     padding: 2px 0;
     text-align: center;
-    color: @blue-grey-300;
-    background-color: fadeout(@gridBg, 50%);
+    color: @blue-grey-100;
+    background-color: fadeout(@gridBg, 35%);
+    -webkit-backdrop-filter: @blurOverlay;
+    backdrop-filter: @blurOverlay;
 
     &.isBelow {
         bottom: auto;

@@ -175,6 +175,7 @@ export default {
     SelectionSummary_clearSelection: `Vider la sélection`,
 
     Settings_title: 'Paramètres',
+    Settings_scanDirsTitle: 'Dossiers d’images',
     Settings_selectPhotoDirs: 'Veuillez sélectionner les dossiers à scanner pour les images.',
     Settings_photoDirs: 'Dossiers à scanner pour les images:',
     Settings_addPhotoDir: 'Ajouter un dossier de photos',
@@ -186,6 +187,12 @@ export default {
     Settings_noDuplicates: 'Aucun fichier identique trouvé.',
     Settings_duplicateGroupsFound: '{0} groupes de photos en double trouvés.',
     Settings_duplicateGroup: 'Groupe {0} : {1} fichiers identiques · {2}',
+
+    Settings_appearanceTitle: 'Appearance',
+    Settings_wallpaperLabel: 'Background image behind the interface:',
+    Settings_wallpaperChoose: 'Choose image…',
+    Settings_wallpaperReset: 'Use default background',
+    Settings_blurLabel: 'Frosted glass blur: {0} px',
 
     LicenseDialog_intro: 'Picturama est libre et open source.',
     LicenseDialog_libraries: `Picturama utilise les bibliothèques suivantes, écrites par d'autres :`,

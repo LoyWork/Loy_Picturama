@@ -3,15 +3,20 @@
 
 use std::path::Path;
 
-use crate::types::common_types::Settings;
+use crate::types::common_types::{AppearanceSettings, Settings};
 
 pub fn fetch_settings(settings_path: &Path) -> Result<Settings, String> {
     if !settings_path.exists() {
-        return Ok(Settings { photo_dirs: vec![], export_options: None });
+        return Ok(Settings { photo_dirs: vec![], export_options: None, appearance: None });
     }
 
     let raw = std::fs::read_to_string(settings_path).map_err(|e| e.to_string())?;
     let json: serde_json::Value = serde_json::from_str(&raw).map_err(|e| e.to_string())?;
+
+    // `appearance` rides along on every parse result (also on the legacy ones), so switching the
+    // photoDirs format does not drop the wallpaper/blur settings.
+    let appearance = json.get("appearance")
+        .and_then(|v| serde_json::from_value::<AppearanceSettings>(v.clone()).ok());
 
     // Current format: { photoDirs: [...] }
     if let Some(photo_dirs) = json.get("photoDirs").and_then(|v| v.as_array()) {
@@ -20,7 +25,7 @@ pub fn fetch_settings(settings_path: &Path) -> Result<Settings, String> {
             .filter_map(|v| v.as_str().map(String::from))
             .map(|d| normalise_path(&d))
             .collect();
-        return Ok(Settings { photo_dirs: dirs, export_options: None });
+        return Ok(Settings { photo_dirs: dirs, export_options: None, appearance });
     }
 
     // Legacy format (before 2019-08-18): { directories: { photos: "..." } }
@@ -32,11 +37,12 @@ pub fn fetch_settings(settings_path: &Path) -> Result<Settings, String> {
         return Ok(Settings {
             photo_dirs:     vec![normalise_path(photos_dir)],
             export_options: None,
+            appearance,
         });
     }
 
     // Unrecognised format → return empty settings
-    Ok(Settings { photo_dirs: vec![], export_options: None })
+    Ok(Settings { photo_dirs: vec![], export_options: None, appearance })
 }
 
 pub fn store_settings(settings_path: &Path, settings: &Settings) -> Result<(), String> {
@@ -45,6 +51,7 @@ pub fn store_settings(settings_path: &Path, settings: &Settings) -> Result<(), S
     let normalised = Settings {
         photo_dirs: settings.photo_dirs.iter().map(|d| normalise_path(d)).collect(),
         export_options: settings.export_options.clone(),
+        appearance: settings.appearance.clone(),
     };
 
     if let Some(parent) = settings_path.parent() {
@@ -59,7 +66,7 @@ pub fn store_settings(settings_path: &Path, settings: &Settings) -> Result<(), S
 /// Replaces `\` with `/` and drops trailing separators, so the same directory always compares and
 /// persists the same way. The import scanner joins paths with '/', and photos.master_dir is
 /// normalised to that form too (migration 004) — settings must match.
-fn normalise_path(path: &str) -> String {
+pub fn normalise_path(path: &str) -> String {
     let trimmed = path.trim_end_matches(['/', '\\']);
     if trimmed.contains('\\') {
         trimmed.replace('\\', "/")
@@ -111,10 +118,31 @@ mod tests {
         store_settings(&path, &Settings {
             photo_dirs: vec!["D:\\photos\\2025".to_string()],
             export_options: None,
+            appearance: None,
         }).unwrap();
 
         let settings = fetch_settings(&path).unwrap();
         assert_eq!(settings.photo_dirs, vec!["D:/photos/2025"]);
+
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn appearance_survives_fetch_and_store() {
+        let dir = test_dir("appearance");
+        let path = write_settings(&dir, r#"{
+            "photoDirs": ["D:/photos"],
+            "appearance": { "wallpaperPath": "D:/wallpapers/aurora.jpg", "blurStrength": 32 }
+        }"#);
+
+        let settings = fetch_settings(&path).unwrap();
+        let appearance = settings.appearance.clone().unwrap();
+        assert_eq!(appearance.wallpaper_path.as_deref(), Some("D:/wallpapers/aurora.jpg"));
+        assert_eq!(appearance.blur_strength, Some(32.0));
+
+        store_settings(&path, &settings).unwrap();
+        let reloaded = fetch_settings(&path).unwrap();
+        assert_eq!(reloaded.appearance, settings.appearance);
 
         std::fs::remove_dir_all(&dir).unwrap();
     }

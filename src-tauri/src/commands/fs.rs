@@ -5,6 +5,7 @@ use tauri::{AppHandle, State};
 use tauri_plugin_dialog::DialogExt;
 
 use crate::asset_scope;
+use crate::store::settings_store::normalise_path;
 use crate::user_dirs::UserDirs;
 
 #[tauri::command]
@@ -71,6 +72,7 @@ pub async fn select_scan_directories(app: AppHandle, user_dirs: State<'_, UserDi
         .into_iter()
         .filter_map(|f| f.into_path().ok())
         .map(|p| p.to_string_lossy().to_string())
+        .map(|d| normalise_path(&d))
         .collect();
 
     // The native dialog is the only trustworthy source of a photo directory: remember the choice so
@@ -103,4 +105,39 @@ pub async fn select_export_directory(app: AppHandle, user_dirs: State<'_, UserDi
     user_dirs.add_export_dir(&dir);
 
     Ok(Some(dir))
+}
+
+/// Opens a native file picker for the wallpaper image shown behind the UI. Returns None when the
+/// user cancels. Like the photo dirs, the image's directory is granted to the asset protocol here —
+/// the native dialog is the only trustworthy source for a filesystem path.
+#[tauri::command]
+pub async fn select_wallpaper_file(app: AppHandle) -> Result<Option<String>, String> {
+    let picked = tokio::task::block_in_place(|| {
+        app.dialog().file()
+            .add_filter("Images", &["jpg", "jpeg", "png", "webp", "bmp", "gif"])
+            .blocking_pick_file()
+    });
+    let file = match picked {
+        Some(file) => file,
+        None => return Ok(None), // cancelled
+    };
+
+    let path = file
+        .into_path()
+        .map_err(|e| e.to_string())?
+        .to_string_lossy()
+        .to_string();
+
+    if let Some(dir) = Path::new(&path).parent() {
+        asset_scope::allow_directory(&app, dir);
+    }
+
+    Ok(Some(path))
+}
+
+/// Validates a wallpaper path that came from the settings store (e.g. on startup): it is only used
+/// by the UI when it exists, otherwise the built-in background is shown.
+#[tauri::command]
+pub async fn wallpaper_file_exists(path: String) -> Result<bool, String> {
+    Ok(Path::new(&path).is_file())
 }

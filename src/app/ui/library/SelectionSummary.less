@@ -3,8 +3,11 @@
 
 .SelectionSummary {
     white-space: nowrap;
-    background-color: @blue-grey-700;
-    border-radius: 4px;
+    background-color: @glassHighlight;
+    -webkit-backdrop-filter: @blurOverlay;
+    backdrop-filter: @blurOverlay;
+    border-radius: 15px;
+    box-shadow: inset 0 0 0 1px @glassBorder;
     margin-left: (10px - 4px);
 }
 

@@ -26,16 +26,127 @@
     ::-webkit-scrollbar {
         width: 8px;
         height: 8px;
-        background: #202a2f;
+        background: transparent;
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #5c7080;
-        border: 2px solid #202a2f;
+        background: rgba(255, 255, 255, 0.22);
+        border: 2px solid transparent;
+        background-clip: padding-box;
         border-radius: 4px;
     }
 
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.35);
+        background-clip: padding-box;
+    }
+
     ::-webkit-scrollbar-corner {
-        background: #202a2f;
-    }   
+        background: transparent;
+    }
+}
+
+// --- Frosted glass overlays ---
+//
+// Popovers, dialogs, alerts and toasts render into portals attached to <body> (outside of the
+// app's `.bp3-dark` tree), so the glass is applied via the overlay's own classes. Light glass is
+// the default (like macOS light-mode sheets); overlays which opt into dark (`.bp3-dark` on the
+// overlay itself) get dark glass.
+
+.bp3-popover {
+    background: @glassBgLight;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+    .bp3-popover-content {
+        background: transparent;
+    }
+    .bp3-menu {
+        background: transparent;
+    }
+}
+.bp3-dark .bp3-popover,
+.bp3-popover.bp3-dark {
+    background: fade(@blue-grey-800, 88%);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+    .bp3-menu {
+        background: transparent;
+    }
+}
+
+// The photo context menu is a `.bp3-dark.bp3-menu` inside a portal popover
+.bp3-menu.bp3-dark {
+    background: fade(@blue-grey-800, 88%);
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.bp3-dialog {
+    background: @glassBgLight;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    border-radius: 10px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.12);
+    overflow: hidden;
+
+    .bp3-dialog-header {
+        background: rgba(255, 255, 255, 0.35);
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+    }
+    .bp3-card {
+        background: rgba(255, 255, 255, 0.45);
+        border-radius: 8px;
+    }
+}
+.bp3-dark .bp3-dialog,
+.bp3-dialog.bp3-dark {
+    background: fade(@blue-grey-800, 88%);
+    color: @blue-grey-100;
+
+    .bp3-dialog-header {
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+    .bp3-card {
+        background: rgba(255, 255, 255, 0.08);
+    }
+}
+
+.bp3-toast {
+    background: @glassBgLight;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    color: @blue-grey-900;
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+.bp3-dark .bp3-toast,
+.bp3-toast.bp3-dark {
+    background: fade(@blue-grey-800, 88%);
+    color: @blue-grey-100;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+// The sliders on the glass toolbars: subtle translucent track, crisp handle
+.bp3-dark .bp3-slider {
+    .bp3-slider-track {
+        background: rgba(255, 255, 255, 0.18);
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+    .bp3-slider-handle {
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+
+        .bp3-slider-label {
+            background: @glassBgLight;
+            color: @blue-grey-900;
+            -webkit-backdrop-filter: @blurOverlay;
+            backdrop-filter: @blurOverlay;
+        }
+    }
 }

@@ -46,7 +46,7 @@
     line-height: 9px;
 }
 .PhotoDetailPane-body {
-    top: @toolbarHeight;
+    top: 0;
     bottom: 0;
 }
 .PhotoDetailPane-rightSidebar {
@@ -66,4 +66,12 @@
 
 .PhotoDetailPane {
     background: black;
+}
+
+// The detail top bar floats over the photo canvas: give it dark glass so the photo shows through
+.PhotoDetailPane-topBar {
+    background: fade(@blue-grey-900, 55%);
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    box-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);
 }

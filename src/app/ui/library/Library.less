@@ -19,13 +19,17 @@
         left: @folderSidebarWidth;
     }
 }
+
 .Library-body {
     position: absolute;
+    // Starts below the top bar: like the sidebars, the top bar sits beside (not on top of) the
+    // photo grid and blurs the wallpaper behind it.
     top: @toolbarHeight;
     left: 0;
     bottom: 0;
     right: 0;
-    // We don't add a transition for right in order to avoid multiple relayouts of the Grid
+    // Animate with the sidebars: the grid relayouts smoothly instead of jumping.
+    transition: right @transition-time ease-out, left @transition-time ease-out;
 
     .Library.hasRightSidebar & {
         right: @sidebarWidth;
@@ -38,14 +42,16 @@
     position: absolute;
     bottom: 0;
     left: 0;
+    transition: left @transition-time ease-out;
 
     .Library.hasSidebar & {
         left: @folderSidebarWidth;
     }
 }
+
 .Library-folderSidebar {
     position: absolute;
-    top: 0;
+    top: @toolbarHeight;  // Below the top bar (Apple Photos layering)
     bottom: 0;
     left: -@folderSidebarWidth;
     width: @folderSidebarWidth;
@@ -57,7 +63,7 @@
 }
 .Library-rightSidebar {
     position: absolute;
-    top: 0;
+    top: @toolbarHeight;
     bottom: 0;
     right: -@sidebarWidth;
     width: @sidebarWidth;
@@ -70,8 +76,17 @@
 
 // --- Styling ---
 
-.Library.hasGrid {
-    background-color: @gridBg;
+// The photo grid area paints an OPAQUE neutral dark surface: photos must be judged against a clean
+// background, not against the wallpaper — in ALL views (all photos, favorites, trash, tags, folders
+// alike), also when a view is EMPTY (empty favorites/trash show the wallpaper otherwise).
+.Library.hasGrid .Library-body {
+    background: linear-gradient(180deg, #22282d 0%, @gridBg 40%, #191c1f 100%);
+}
+
+// Empty views (no photos in the library or in the current filter): same opaque dark surface,
+// so no view ever shows the wallpaper behind the content area.
+.Library:not(.hasGrid) .Library-body {
+    background: linear-gradient(180deg, #22282d 0%, @gridBg 40%, #191c1f 100%);
 }
 
 .Library-grid {

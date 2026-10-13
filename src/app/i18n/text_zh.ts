@@ -175,6 +175,7 @@ export default {
     SelectionSummary_clearSelection: `清除选中`,
 
     Settings_title: '设置',
+    Settings_scanDirsTitle: '图片文件夹',
     Settings_selectPhotoDirs: '请选择要扫描图像的文件夹',
     Settings_photoDirs: '要扫描图像的文件夹：',
     Settings_addPhotoDir: '添加照片文件夹',
@@ -186,6 +187,12 @@ export default {
     Settings_noDuplicates: '没有找到内容相同的文件。',
     Settings_duplicateGroupsFound: '找到 {0} 组重复图片。',
     Settings_duplicateGroup: '第 {0} 组：{1} 个相同文件 · {2}',
+
+    Settings_appearanceTitle: '外观',
+    Settings_wallpaperLabel: '界面背景图：',
+    Settings_wallpaperChoose: '选择图片…',
+    Settings_wallpaperReset: '恢复默认背景',
+    Settings_blurLabel: '毛玻璃模糊：{0} px',
 
     LicenseDialog_intro: 'Picturama 是自由的开源软件。',
     LicenseDialog_libraries: 'Picturama 使用了以下由他人编写的库：',

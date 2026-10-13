@@ -25,8 +25,10 @@ import './Grid.less'
 
 
 const gridSpacerHeight = 1
+// The top bar sits beside the grid (blurring the wallpaper), but the bottom bar (zoom slider /
+// import progress) overlays the grid's bottom edge — keep the last row of photos clear of it.
+const gridTopPadding = 0
 const gridBottomPadding = toolbarHeight
-    // Add padding at the bottom, so the bottom bars (import and slider) don't cover a photo
 
 interface Props {
     className?: any
@@ -224,7 +226,7 @@ export default class Grid extends React.Component<Props, State> {
                 <GridSection
                     key={sectionId}
                     className="Grid-section"
-                    style={{ left: layout.left, top: layout.top, width: layout.width, height: layout.height }}
+                    style={{ left: layout.left, top: layout.top + gridTopPadding, width: layout.width, height: layout.height }}
                     inSelectionMode={!!props.selection}
                     section={props.sectionById[sectionId]}
                     layout={layout}
@@ -250,7 +252,7 @@ export default class Grid extends React.Component<Props, State> {
             return 0
         } else {
             const lastLayout = gridLayout.sectionLayouts[sectionCount - 1]
-            return lastLayout.top + lastLayout.height + gridBottomPadding
+            return lastLayout.top + lastLayout.height + gridTopPadding + gridBottomPadding
         }
     }
 
@@ -280,7 +282,7 @@ export default class Grid extends React.Component<Props, State> {
                             gridLayout={gridLayout!}
                             sectionIds={props.sectionIds}
                             sectionById={props.sectionById}
-                            viewportHeight={state.viewportHeight}
+                            viewportHeight={state.viewportHeight - gridTopPadding}
                             contentHeight={contentHeight}
                             scrollTop={state.scrollTop}
                             setScrollTop={this.setScrollTop}
@@ -296,10 +298,11 @@ export default class Grid extends React.Component<Props, State> {
 function getNailedGridPosition(scrollTop: number, viewportHeight: number, sectionLayouts: GridSectionLayout[],
     sectionIds: PhotoSectionId[], sectionById: PhotoSectionById): NailedGridPosition | null
 {
+    // Anchor the photo at the viewport's TOP edge: when the layout is recalculated (e.g. the folder
+    // sidebar opens and the grid gets narrower), this photo stays at the same spot on the screen —
+    // so the content appears to be pinned instead of jumping.
     const positions: PhotoGridPosition[] = []
 
-    const scrollBottom = scrollTop + viewportHeight
-    const scrollCenter = (scrollTop + scrollBottom) / 2
     for (let sectionIndex = 0, sectionCount = sectionLayouts.length; sectionIndex < sectionCount; sectionIndex++) {
         const sectionLayout = sectionLayouts[sectionIndex]
         const section = sectionById[sectionIds[sectionIndex]]
@@ -312,24 +315,15 @@ function getNailedGridPosition(scrollTop: number, viewportHeight: number, sectio
                 const boxTopInGrid = sectionBodyTop + box.top
                 const boxBottomInGrid = boxTopInGrid + box.height
                 if (boxBottomInGrid >= scrollTop) {
-                    if (boxTopInGrid <= scrollBottom || !positions.length) {
-                        // This photo is in view
-                        positions.push(getPhotoGridPosition(scrollCenter, sectionBodyTop, box, section.id, photoId))
-                    } else {
-                        // This photo is out of view -> We're done
-                        return { positions }
-                    }
+                    // This is the photo the viewport top edge falls into — the only anchor we need
+                    positions.push(getPhotoGridPosition(scrollTop, sectionBodyTop, box, section.id, photoId))
+                    return { positions }
                 }
             }
         }
     }
 
-    if (positions.length) {
-        // Happens if the very last photo is in view
-        return { positions }
-    } else {
-        return null
-    }
+    return null
 }
 
 
@@ -383,22 +377,24 @@ function getPhotoGridPosition(y: number, sectionBodyTop: number, box: JustifiedL
 function getScrollTopForNailedGridPosition(nailedGridPosition: NailedGridPosition, viewportHeight: number,
     sectionLayouts: GridSectionLayout[], sectionIds: PhotoSectionId[], sectionById: PhotoSectionById): number | null
 {
-    let totalCenterY = 0
-    let centerYCount = 0
+    // Places the anchored photo back at the viewport's TOP edge (see `getNailedGridPosition`):
+    // the photo the user last saw at the top keeps its on-screen position across relayouts.
+    let totalAnchorY = 0
+    let anchorYCount = 0
     for (const position of nailedGridPosition.positions) {
-        const centerY = getYForPhotoGridPosition(position, sectionLayouts, sectionIds, sectionById)
-        if (centerY != null) {
-            totalCenterY += centerY
-            centerYCount++
+        const anchorY = getYForPhotoGridPosition(position, sectionLayouts, sectionIds, sectionById)
+        if (anchorY != null) {
+            totalAnchorY += anchorY
+            anchorYCount++
         }
     }
 
-    if (centerYCount === 0) {
+    if (anchorYCount === 0) {
         return null
     }
 
-    const avgCenterY = totalCenterY / centerYCount
-    return Math.max(0, Math.round(avgCenterY - viewportHeight / 2))
+    const avgAnchorY = totalAnchorY / anchorYCount
+    return Math.max(0, Math.round(avgAnchorY))
 }
 
 

@@ -24,6 +24,18 @@
 @red: #f44336;
 @white: #ffffff;
 
+// --- Frosted glass (macOS-style) ---
+// Translucent panel fills. The blur itself is applied via `backdrop-filter` where a panel is used.
+// The blur radius comes from the CSS variable `--glass-blur-px` (px), which the App writes from the
+// appearance settings — `blurStrength()` in variables.ts is the fallback default.
+@glassBg: rgba(56, 68, 78, 0.55);
+@glassBgLight: rgba(255, 255, 255, 0.72);   // Light glass for dialogs, popovers and alerts
+@glassBorder: rgba(255, 255, 255, 0.14);    // Hairline separator between glass panels
+@glassBorderLight: rgba(255, 255, 255, 0.45);
+@glassHighlight: rgba(255, 255, 255, 0.14); // Hover/selection fill on glass panels
+@blurPanel: blur(var(--glass-blur-px, 28px)) saturate(160%);   // Large panels (toolbars, sidebars)
+@blurOverlay: blur(calc(var(--glass-blur-px, 28px) / 2)) saturate(130%); // Small overlays (picture buttons, pills)
+
 @transition-time: 0.4s;
 
 // The with of the traffic light buttons of a macOS window. Includes control margins on the left and right.

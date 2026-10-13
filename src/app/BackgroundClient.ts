@@ -133,6 +133,14 @@ const BackgroundClient = {
         return invokeCommand('selectExportDirectory')
     },
 
+    selectWallpaperFile(): Promise<string | undefined> {
+        return invokeCommand('selectWallpaperFile')
+    },
+
+    wallpaperFileExists(path: string): Promise<boolean> {
+        return invokeCommand('wallpaperFileExists', { path })
+    },
+
     startImport(): Promise<void> {
         return invokeCommand('startImport')
     },

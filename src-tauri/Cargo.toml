@@ -59,7 +59,8 @@ serde_yaml         = "0.9"
 sha2               = "0.10"
 # Detects the OS UI locale to pick the app language.
 sys-locale         = "0.3"
-# The Tauri runtime: Native UI, IPC with frontend.
+# The Tauri runtime: Native UI, IPC with frontend. Ships with the OS-level frosted glass
+# (`Window::set_effects`, Windows Acrylic/Mica) used by `window_service.rs`.
 tauri              = { version = "2", features = ["protocol-asset", "devtools"] }
 # Native file/folder pickers.
 tauri-plugin-dialog = "2"

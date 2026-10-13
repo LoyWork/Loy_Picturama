@@ -38,12 +38,15 @@ div.picturama-outer-modal {
   div.picturama-modal {
     width: 400px;
     height: @sidebarWidth;
-    background-color: @blue-grey-100;
+    background: @glassBgLight;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
     color: @blue-grey-900;
     position: absolute;
     top: 25%;
     left: 31%;
-    border-radius: 2px;
+    border-radius: 10px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.35);
     padding: 10px 15px;
   }
 }

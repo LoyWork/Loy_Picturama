@@ -85,9 +85,17 @@ export interface IpcErrorInfo {
 export interface Settings {
     photoDirs: string[]
     exportOptions?: PhotoExportOptions
+    appearance?: AppearanceSettings
     legacy?: {
         versionsDir?: string
     }
+}
+
+export interface AppearanceSettings {
+    /** Absolute path of the custom wallpaper image behind the UI; undefined = built-in aurora */
+    wallpaperPath?: string
+    /** Backdrop blur radius in px for the frosted panels (0–60) */
+    blurStrength?: number
 }
 
 

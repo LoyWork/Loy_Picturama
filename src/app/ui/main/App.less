@@ -3,7 +3,46 @@
 
 .App-windowControls {
     z-index: 100;
-    border-left: 1px solid @blue-grey-900;
+    border-left: 1px solid @glassBorder;
+}
+
+// Stacking root: wallpaper (0) → Library (1) → main views (10) → window controls (100)
+.App {
+    position: relative;
+}
+
+.App-wallpaper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 0;
+    // Ambient "aurora" backdrop behind the whole app: gives the frosted panels something to
+    // blur even where no photos scroll beneath them (sidebars, empty library). The bright disc
+    // and the color blobs have defined edges, so the panel blur is clearly visible.
+    background:
+        radial-gradient(circle 180px at 72% 26%, rgba(255, 214, 143, 0.55), rgba(255, 214, 143, 0) 61%),
+        linear-gradient(180deg, transparent 55%, rgba(216, 100, 40, 0.22) 72%, transparent 90%),
+        radial-gradient(50% 45% at 18% 22%, rgba(59, 169, 224, 0.30), transparent 70%),
+        radial-gradient(45% 40% at 88% 70%, rgba(0, 150, 136, 0.26), transparent 72%),
+        radial-gradient(55% 50% at 40% 95%, rgba(94, 53, 177, 0.24), transparent 75%),
+        linear-gradient(180deg, #1c2430 0%, #14181d 100%);
+}
+
+// User-chosen wallpaper image (see the appearance settings). A dark veil keeps the glass panels
+// readable on bright images.
+.App-wallpaper-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(10, 14, 18, 0.35);
+    }
 }
 
 .App-container {
@@ -12,7 +51,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: @blue-grey-100;
+    // Transparent: the wallpaper behind shows through wherever the UI paints no opaque surface.
+    background: transparent;
+    z-index: 1;
 }
 
 .App-mainView {

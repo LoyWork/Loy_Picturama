@@ -74,6 +74,24 @@ pub struct IpcErrorInfo {
 pub struct Settings {
     pub photo_dirs: Vec<String>,
     pub export_options: Option<PhotoExportOptions>,
+    /// UI appearance. Optional so older settings files (and the legacy readers below) keep parsing.
+    #[serde(default)]
+    pub appearance: Option<AppearanceSettings>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct AppearanceSettings {
+    /// Absolute path of the custom wallpaper image shown behind the UI (`None` = built-in aurora).
+    pub wallpaper_path: Option<String>,
+    /// Backdrop blur radius in px for the frosted panels (0–60, `None` = the built-in default).
+    pub blur_strength: Option<f64>,
+}
+
+impl Default for AppearanceSettings {
+    fn default() -> Self {
+        AppearanceSettings { wallpaper_path: None, blur_strength: None }
+    }
 }
 
 
