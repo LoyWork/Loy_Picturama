@@ -1,0 +1,31 @@
+@import "../../style/variables.less";
+
+.PhotoToolsToolbar {
+    position: absolute;
+    top: @toolbarHeight;
+    bottom: 0;
+    right: 0;
+    width: @photoToolsWidth;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px 4px;
+    background: @glassBg;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    border-left: 1px solid @glassBorder;
+
+    .bp3-button {
+        flex: 0 0 auto;
+        width: 34px;
+        height: 36px;
+        padding: 0;
+        border-radius: 4px;
+        color: @blue-grey-300;
+
+        &.bp3-active { background: @glassHighlight; color: @white; }
+        &:focus-visible { outline: 2px solid @teal-300; outline-offset: -2px; }
+    }
+}
+.PhotoToolsToolbar-spacer { flex: 1; }

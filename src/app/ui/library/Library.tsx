@@ -14,7 +14,7 @@ import { fetchTotalPhotoCount, fetchSections, fetchPhotoFolders, getThumbnailSrc
 import { fetchTags, setPhotoTags } from 'app/controller/PhotoTagController'
 import { showError } from 'app/ErrorPresenter'
 import { msg } from 'app/i18n/i18n'
-import { setGridRowHeightAction, setShowInfoAction, setShowSidebarAction } from 'app/state/actions'
+import { setGridRowHeightAction, setShowInfoAction, setShowGradingAction, setShowSidebarAction } from 'app/state/actions'
 import store from 'app/state/store'
 import { getInfoPhoto, getPreselectionRange, getTagTitles } from 'app/state/selectors'
 import { AppState, InfoPhotoData, PhotoLibraryPosition, PreselectionRange, SelectionState } from 'app/state/StateTypes'
@@ -23,6 +23,8 @@ import { keySymbols } from 'app/UiConstants'
 import { FetchState } from 'app/UITypes'
 import CancelablePromise from 'app/util/CancelablePromise'
 import { bindMany } from 'app/util/LangUtil'
+import { getCollectionSize, getFirstPhotoOfCollection } from 'app/util/PhotoCollectionResolver'
+import PhotoToolsToolbar from 'app/ui/widget/PhotoToolsToolbar'
 
 import LibraryTopBar from './LibraryTopBar'
 import LibraryBottomBar from './LibraryBottomBar'
@@ -89,7 +91,7 @@ export class Library extends React.Component<Props> {
 
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'toggleShowInfo')
+        bindMany(this, 'toggleShowInfo', 'openGrading')
     }
 
     componentDidMount() {
@@ -103,6 +105,14 @@ export class Library extends React.Component<Props> {
     private toggleShowInfo() {
         const { props } = this
         props.setShowInfo(!props.showInfo)
+    }
+
+    private openGrading() {
+        const first = getFirstPhotoOfCollection(this.props.selection || this.props.activePhoto)
+        if (first) {
+            this.props.setDetailPhotoById(first.sectionId, first.photo.id)
+            store.dispatch(setShowGradingAction(true))
+        }
     }
 
     render() {
@@ -177,6 +187,7 @@ export class Library extends React.Component<Props> {
                     photosCount={props.photoCount}
                     photoActionController={props.photoActionController}
                     toggleShowInfo={this.toggleShowInfo}
+                    toggleShowGrading={this.openGrading}
                     onPhotosTrashed={props.onPhotosTrashed}
                 />
                 <div className="Library-body">
@@ -221,6 +232,14 @@ export class Library extends React.Component<Props> {
                     tags={props.tags}
                     closeInfo={this.toggleShowInfo}
                     setPhotoTags={props.setPhotoTags}
+                />
+                <PhotoToolsToolbar
+                    showInfo={props.showInfo}
+                    showGrading={false}
+                    canGrade={getCollectionSize(props.selection || props.activePhoto) > 0}
+                    disabled={!props.isActive}
+                    toggleShowInfo={this.toggleShowInfo}
+                    toggleShowGrading={this.openGrading}
                 />
             </div>
         );

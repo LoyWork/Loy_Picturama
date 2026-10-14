@@ -267,7 +267,7 @@ export default class PhotoColorGrading extends React.Component<Props, State> {
 
         return (
             <div className={classNames(props.className, 'PhotoColorGrading bp3-dark')} style={props.style}>
-                <Toolbar className="PhotoColorGrading-topBar" isTopBar isRight>
+                <Toolbar className="PhotoColorGrading-topBar" isTopBar>
                     <span className="PhotoColorGrading-title">{msg('PhotoColorGrading_title')}</span>
                     <Toolbar.Spacer isTopBar/>
                     <Button icon="cross" minimal={true} onClick={this.onClose} />

@@ -266,7 +266,7 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
                     <ViewModeLayer
                         topBarClassName={props.topBarClassName}
                         bodyClassName={props.bodyClassName}
-                        isTopBarRight={!props.isShowingInfo && !props.isShowingColorGrading}
+                        isTopBarRight={true}
                         topBarRightItem={
                             <>
                                 <PhotoActionButtons
@@ -275,6 +275,7 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
                                     isShowingTrash={!!props.photo.trashed}
                                     isShowingInfo={props.isShowingInfo}
                                     isShowingColorGrading={props.isShowingColorGrading}
+                                    showPanelButtons={false}
                                     photoActionController={props.photoActionController}
                                     toggleShowInfo={props.toggleShowInfo}
                                     toggleShowGrading={props.toggleShowGrading}

@@ -10,14 +10,6 @@
     left: 0;
     top: 0;
     right: 0;
-    transition: right @transition-time ease-out, left @transition-time ease-out;
-
-    .Library.hasRightSidebar & {
-        right: @sidebarWidth;
-    }
-    .Library.hasSidebar & {
-        left: @folderSidebarWidth;
-    }
 }
 
 .Library-body {
@@ -27,12 +19,12 @@
     top: @toolbarHeight;
     left: 0;
     bottom: 0;
-    right: 0;
-    // Animate with the sidebars: the grid relayouts smoothly instead of jumping.
-    transition: right @transition-time ease-out, left @transition-time ease-out;
+    right: @photoToolsWidth;
+    // Only the left library sidebar animates; right tools open immediately.
+    transition: left @transition-time ease-out;
 
     .Library.hasRightSidebar & {
-        right: @sidebarWidth;
+        right: @sidebarWidth + @photoToolsWidth;
     }
     .Library.hasSidebar & {
         left: @folderSidebarWidth;
@@ -67,10 +59,13 @@
     bottom: 0;
     right: -@sidebarWidth;
     width: @sidebarWidth;
-    transition: right @transition-time ease-out;
+    visibility: hidden;
+    pointer-events: none;
 
     .Library.hasRightSidebar & {
-        right: 0;
+        right: @photoToolsWidth;
+        visibility: visible;
+        pointer-events: auto;
     }
 }
 
@@ -103,4 +98,8 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .Library-body, .Library-folderSidebar, .Library-bottomBar { transition: none; }
 }

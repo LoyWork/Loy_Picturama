@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import { Photo, PhotoWork, PhotoSectionId, ColorGrading, DevelopSettings } from 'app/CommonTypes'
 import PhotoInfo from 'app/ui/info/PhotoInfo'
 import PhotoColorGrading from 'app/ui/grading/PhotoColorGrading'
+import PhotoToolsToolbar from 'app/ui/widget/PhotoToolsToolbar'
 import { HistogramData } from 'app/util/DevelopUtil'
 import { setDetailPhotoByIndex, setPreviousDetailPhoto, setNextDetailPhoto } from 'app/controller/DetailController'
 import { defaultLibrarySelectionController, LibrarySelectionController } from 'app/controller/LibrarySelectionController'
@@ -230,6 +231,14 @@ export class PhotoDetailPane extends React.Component<Props, State> {
                     closeGrading={this.toggleShowGrading}
                     onColorGradingChange={this.onColorGradingChange}
                     onDevelopChange={this.onDevelopChange}
+                />
+                <PhotoToolsToolbar
+                    showInfo={props.showInfo}
+                    showGrading={props.showGrading}
+                    canGrade={!!props.photo}
+                    disabled={!props.isActive || state.mode !== 'view'}
+                    toggleShowInfo={this.toggleShowInfo}
+                    toggleShowGrading={this.toggleShowGrading}
                 />
             </div>
         );

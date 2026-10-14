@@ -5,24 +5,26 @@
 .PhotoDetailPane {
     position: relative;
 }
-.PhotoDetailPane-topBar,
 .PhotoDetailPane-body {
     position: absolute;
     left: 0;
-    right: 0;
+    right: @photoToolsWidth;
 
     // One open sidebar (info or grading) takes one column
     .PhotoDetailPane.hasRightSidebar &,
     .PhotoDetailPane.hasGradingSidebar & {
-        right: @sidebarWidth;
+        right: @sidebarWidth + @photoToolsWidth;
     }
 
     // Both open take two columns
     .PhotoDetailPane.hasGradingSidebar.hasRightSidebar & {
-        right: 2 * @sidebarWidth;
+        right: 2 * @sidebarWidth + @photoToolsWidth;
     }
 }
 .PhotoDetailPane-topBar {
+    position: absolute;
+    left: 0;
+    right: 0;
     top: 0;
 
     .App.hasWindowsButtons &.isRight {
@@ -53,47 +55,61 @@
     line-height: 9px;
 }
 .PhotoDetailPane-body {
-    top: 0;
+    top: @toolbarHeight;
     bottom: 0;
 }
 .PhotoDetailPane-rightSidebar {
     position: absolute;
-    top: 0;
+    top: @toolbarHeight;
     bottom: 0;
     right: -@sidebarWidth;
     width: @sidebarWidth;
+    visibility: hidden;
+    pointer-events: none;
 
     .PhotoDetailPane.hasRightSidebar & {
-        right: 0;
+        right: @photoToolsWidth;
+        visibility: visible;
+        pointer-events: auto;
     }
 }
 // The color grading panel sits to the left of the info panel (both on the right side of the
 // window; grading is the left one of the two, and pushes further left when info is also open)
 .PhotoDetailPane-leftSidebar {
     position: absolute;
-    top: 0;
+    top: @toolbarHeight;
     bottom: 0;
     right: -@sidebarWidth;
     width: @sidebarWidth;
+    visibility: hidden;
+    pointer-events: none;
 
     .PhotoDetailPane.hasGradingSidebar & {
-        right: 0;
+        right: @photoToolsWidth;
+        visibility: visible;
+        pointer-events: auto;
     }
 
     .PhotoDetailPane.hasGradingSidebar.hasRightSidebar & {
-        right: @sidebarWidth;
+        right: @sidebarWidth + @photoToolsWidth;
     }
 }
 
 // --- Styling ---
 
 .PhotoDetailPane {
+    // The glass sidebars sample the same wallpaper as the library sidebars.
+    background: transparent;
+}
+.PhotoDetailPane-body.PhotoLayer {
+    // This class is also used by the sizer and interaction overlay. Only the canvas layer
+    // paints black; an opaque overlay would cover the rendered photo.
     background: black;
 }
 
 // The detail top bar floats over the photo canvas: give it dark glass so the photo shows through
 .PhotoDetailPane-topBar {
-    background: fade(@blue-grey-900, 55%);
+    background: @glassBg;
     -webkit-backdrop-filter: @blurPanel;
     backdrop-filter: @blurPanel;
     box-shadow: 0 1px 12px rgba(0, 0, 0, 0.25);

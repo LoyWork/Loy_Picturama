@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react'
 import { bindActionCreators } from 'redux'
 import { connect } from 'react-redux'
-import { Button, MaybeElement, NonIdealState } from '@blueprintjs/core'
+import { Button, NonIdealState } from '@blueprintjs/core'
 import classNames from 'classnames'
 import { convertFileSrc } from '@tauri-apps/api/core'
 
@@ -118,40 +118,18 @@ class App extends React.Component<Props> {
             mainView = <PhotoDetailPane className='App-mainView' isActive={!modalView} />
         }
 
-        let libraryTopBarLeftItem: MaybeElement
-        if (props.selectedCount === 0) {
-            libraryTopBarLeftItem = (
-                <>
-                    {props.isFullScreen &&
-                        <Button
-                            minimal={true}
-                            icon='minimize'
-                            onClick={props.toggleFullScreen}
-                        />
-                    }
-                    <Button
-                        minimal={true}
-                        icon='drawer-left'
-                        active={props.showSidebar}
-                        disabled={!props.hasSidebarContent}
-                        title={msg('App_toggleSidebar')}
-                        onClick={props.toggleSidebar}
-                    />
-                    <Button
-                        minimal={true}
-                        icon='cog'
-                        onClick={props.openSettings}
-                    />
-                </>
-            )
-        } else {
-            libraryTopBarLeftItem = (
-                <SelectionSummary
-                    selectedCount={props.selectedCount}
-                    onClearSelection={props.clearSelection}
-                />
-            )
-        }
+        const libraryTopBarLeftItem = (
+            <>
+                {props.selectedCount === 0 && props.isFullScreen && <Button minimal icon='minimize' onClick={props.toggleFullScreen}/>}
+                <Button minimal icon='drawer-left' active={props.showSidebar}
+                    disabled={!props.hasSidebarContent}
+                    title={msg('App_toggleSidebar')} aria-label={msg('App_toggleSidebar')}
+                    aria-pressed={props.showSidebar} onClick={props.toggleSidebar}/>
+                {props.selectedCount === 0 ? <>
+                    <Button minimal icon='cog' onClick={props.openSettings}/>
+                </> : <SelectionSummary selectedCount={props.selectedCount} onClearSelection={props.clearSelection}/>}
+            </>
+        )
 
         return (
             <ErrorBoundary className='bp3-dark'>
@@ -165,6 +143,7 @@ class App extends React.Component<Props> {
                     }
                     <Library
                         className='App-container'
+                        style={mainView ? { display: 'none' } : undefined}
                         topBarLeftItem={libraryTopBarLeftItem}
                         bottomBarLeftItem={props.importProgress &&
                             <ImportProgressButton

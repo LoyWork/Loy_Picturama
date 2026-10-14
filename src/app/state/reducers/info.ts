@@ -13,16 +13,10 @@ const initialInfoState: InfoState = {
 export const info = (state: InfoState = initialInfoState, libraryState: LibraryState, action: Action): InfoState => {
     switch (action.type) {
         case SET_SHOW_INFO:
-            if (action.payload.view === 'library') {
-                return {
-                    ...state,
-                    showInLibrary: action.payload.showInfo
-                }
-            } else {
-                return {
-                    ...state,
-                    showInDetail: action.payload.showInfo
-                }
+            return {
+                ...state,
+                showInLibrary: action.payload.showInfo,
+                showInDetail: action.payload.showInfo
             }
         case SET_SHOW_GRADING:
             return {

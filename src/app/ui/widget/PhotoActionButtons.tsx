@@ -30,6 +30,7 @@ interface Props {
      * the detail view top bar; passing `false` hides it (e.g. where grading makes no sense).
      */
     showGradingButton?: boolean
+    showPanelButtons?: boolean
     photoActionController: PhotoActionController
     toggleShowInfo: () => void
     toggleShowGrading: () => void
@@ -189,7 +190,7 @@ export default class PhotoActionButtons extends React.Component<Props> {
                         <span className={Classes.BUTTON_TEXT}>{msg('PhotoActionButtons_restore')}</span>
                     </Button>
                 }
-                {props.showGradingButton !== false &&
+                {props.showPanelButtons !== false && props.showGradingButton !== false &&
                     <Button
                         minimal
                         icon='tint'
@@ -197,12 +198,12 @@ export default class PhotoActionButtons extends React.Component<Props> {
                         {...getCommandButtonProps(commands.toggleGrading)}
                     />
                 }
-                <Button
+                {props.showPanelButtons !== false && <Button
                     minimal
                     icon='info-sign'
                     active={props.isShowingInfo}
                     {...getCommandButtonProps(commands.toggleInfo)}
-                />
+                />}
                 <Button minimal icon='export' disabled={!hasSelection} onClick={this.openExport} title={msg('PhotoActionButtons_export')}/>
             </>
         )    
