@@ -79,7 +79,7 @@ export default class DevelopSlider extends React.Component<Props, State> {
     }
 
     /** The position on the track (0..1) of a value. Temperature follows Lightroom's scale */
-    private positionOf(v: number): number {
+    private normalizedPosition(v: number): number {
         const { spec } = this
         if (spec.id === 'wb.temp') {
             // 2000..7000 K fill the left half evenly; the right half grows logarithmically to 50000 K
@@ -211,7 +211,7 @@ export default class DevelopSlider extends React.Component<Props, State> {
         const { spec } = this
         const enabled = this.props.enabled !== false
         const v = this.shownValue
-        const p = Math.max(0, Math.min(1, this.positionOf(v)))
+        const p = Math.max(0, Math.min(1, this.normalizedPosition(v)))
         const stops = trackStops(spec.track)
 
         let trackStyle: React.CSSProperties
@@ -261,7 +261,7 @@ export default class DevelopSlider extends React.Component<Props, State> {
                     {spec.track.kind === 'centered' &&
                         <div
                             className='DevelopSlider-zero'
-                            style={{ left: `${this.positionOf(0) * 100}%` }}
+                            style={{ left: `${this.normalizedPosition(0) * 100}%` }}
                         />
                     }
                     <div

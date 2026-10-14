@@ -448,7 +448,7 @@ export class ColorGradingShader extends StandardShaderProgram<ColorGradingUnifor
 
                     rgb = clamp(rgb, 0.0, 1.0);
 
-                    // --- vignette (radial darkening/lightening from the corners) ----------------
+                    // --- vignette (radial darkening/brightening from the corners) ----------------
                     if (uVignetteAmount != 0.0) {
                         highp float d = distance(vTextureCoord, vec2(0.5)) / 0.7071;
                         highp float midpoint = mix(0.2, 1.4, uVignetteMidpoint / 100.0);
