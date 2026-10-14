@@ -142,6 +142,112 @@ export interface PhotoDetail {
     tags: string[]
 }
 
+/**
+ * One colour grading wheel: where a hue and how much of it is blended into a tonal range.
+ * Mirrors LightCraft's `Wheel` (`crates/develop/src/settings.rs`).
+ */
+export interface ColorGradingWheel {
+    /** Hue in degrees 0..360 (0 = red) */
+    hue?: number
+    /** How much of the hue is blended in, 0..100 */
+    sat?: number
+    /** Brightness shift of the tonal range, -100..100 */
+    lum?: number
+}
+
+export interface ColorGrading {
+    shadows?: ColorGradingWheel
+    midtones?: ColorGradingWheel
+    highlights?: ColorGradingWheel
+    /** A fourth wheel over the whole image (LightCraft has it, Lightroom calls it "Global") */
+    global?: ColorGradingWheel
+    /** How far the tonal ranges reach into each other, 0..100 (default 50) */
+    blending?: number
+    /** Shifts the split between shadows and highlights, -100..100 */
+    balance?: number
+}
+
+/**
+ * The develop adjustments carried per photo (the `picturama.yml` sidecar), mirroring the parts
+ * of LightCraft's `DevelopSettings` (`crates/develop/src/settings.rs`) that Picturama renders.
+ */
+export interface DevelopSettings {
+    /** White balance: temperature in Kelvin (2000..50000, as-shot 6500) and tint -150..150 (negative = green) */
+    wb?: { temp?: number, tint?: number }
+    light?: {
+        /** Exposure in stops, -5..5 */
+        exposure?: number
+        /** Contrast -100..100 */
+        contrast?: number
+        highlights?: number
+        shadows?: number
+        whites?: number
+        blacks?: number
+    }
+    /** Vibrance and saturation, both -100..100 (vibrance protects skin tones) */
+    color?: { vibrance?: number, saturation?: number }
+    /**
+     * The 8-band colour mixer in Lightroom band order. Each band: hue shift -100..100,
+     * saturation -100..100, luminance -100..100.
+     */
+    mixer?: Partial<Record<MixerBand, { hue?: number, sat?: number, lum?: number }>>
+    /** B&W treatment: per-band luminance contribution -100..100 */
+    bwMix?: Partial<Record<MixerBand, number>>
+    /** True for black & white (the mixer acts as the B&W mix) */
+    treatment?: 'color' | 'bw'
+    /** Effects: texture, clarity and dehaze, all -100..100 */
+    effects?: { texture?: number, clarity?: number, dehaze?: number }
+    vignette?: {
+        /** -100..100 (negative darkens the corners) */
+        amount?: number
+        midpoint?: number
+        roundness?: number
+        feather?: number
+        highlights?: number
+    }
+    grain?: {
+        amount?: number
+        size?: number
+        roughness?: number
+    }
+    detail?: {
+        sharpenAmount?: number
+        sharpenRadius?: number
+        sharpenDetail?: number
+        sharpenMasking?: number
+        nrLuminance?: number
+        nrDetail?: number
+        nrContrast?: number
+        nrColor?: number
+        nrColorDetail?: number
+        nrColorSmoothness?: number
+    }
+    calibration?: {
+        shadowsTint?: number
+        redHue?: number
+        redSat?: number
+        greenHue?: number
+        greenSat?: number
+        blueHue?: number
+        blueSat?: number
+    }
+    /** The colour grading wheels (see `ColorGrading`) */
+    grading?: ColorGrading
+    /** Sections switched off with the panel header eyes (ids like 'light', 'color', 'effects') */
+    disabledSections?: string[]
+}
+
+/** The 8 colour-mixer bands in Lightroom order */
+export type MixerBand = 'red' | 'orange' | 'yellow' | 'green' | 'aqua' | 'blue' | 'purple' | 'magenta'
+
+export const MIXER_BANDS: MixerBand[] = [ 'red', 'orange', 'yellow', 'green', 'aqua', 'blue', 'purple', 'magenta' ]
+
+/** Centre hue (degrees) of each mixer band (sRGB-ish HSV hue), as LightCraft's `MIXER_HUES` */
+export const MIXER_HUES: number[] = [ 0, 30, 60, 120, 180, 225, 270, 315 ]
+
+/** Display colour of each mixer band, as LightCraft's `BAND_COLORS` */
+export const MIXER_BAND_COLORS: string[] = [ '#aa0000', '#bb6600', '#aaaa00', '#009900', '#00aaaa', '#0044cc', '#7722aa', '#aa0077' ]
+
 export interface PhotoWork {
     rotationTurns?: 1 | 2 | 3
     /** The number of degrees the photo is tilted (= rotated around the z axis) */
@@ -151,6 +257,9 @@ export interface PhotoWork {
      * In projected coordinates (see `doc/geometry-concept.md`).
      */
     cropRect?: Rect
+    colorGrading?: ColorGrading
+    /** The full develop settings (white balance, light, colour, effects…); see `DevelopSettings` */
+    develop?: DevelopSettings
     flagged?: true
     tags?: string[]
 }

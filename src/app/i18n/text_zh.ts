@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: 'Picturama 未读取',
     PhotoInfo_error_fetchPhotoSize: '获取照片大小失败',
 
+    PhotoActionButtons_colorGrading: '调色',
+
+    PhotoColorGrading_title: '调色',
+    PhotoColorGrading_mode_global: '全局',
+    PhotoColorGrading_mode_3way: '三向',
+    PhotoColorGrading_mode_shadows: '阴影',
+    PhotoColorGrading_mode_midtones: '中间调',
+    PhotoColorGrading_mode_highlights: '高光',
+    PhotoColorGrading_blending: '混合',
+    PhotoColorGrading_balance: '平衡',
+    PhotoColorGrading_saturation: '饱和度',
+    PhotoColorGrading_luminance: '明度',
+    PhotoColorGrading_reset: '重置',
+    PhotoColorGrading_hint: '拖动色轮设置色相和饱和度。按住 Shift 锁定色相,Ctrl/Cmd 锁定饱和度,Alt 微调。双击色轮可重置。',
+
     RotateButtonGroup_rotateLeft: '向左旋转',
     RotateButtonGroup_rotateRight: '向右旋转',
 

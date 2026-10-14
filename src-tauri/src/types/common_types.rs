@@ -151,6 +151,33 @@ pub struct PhotoDetail {
     pub tags: Vec<String>,
 }
 
+/// One colour grading wheel: where a hue and how much of it is blended into a tonal range.
+/// Mirrors `ColorGradingWheel` in `src/common/CommonTypes.ts`.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ColorGradingWheel {
+    /// Hue in degrees 0..360 (0 = red)
+    pub hue: Option<f64>,
+    /// How much of the hue is blended in, 0..100
+    pub sat: Option<f64>,
+    /// Brightness shift of the tonal range, -100..100
+    pub lum: Option<f64>,
+}
+
+/// 3-way colour grading (shadows / midtones / highlights wheels plus blending and balance).
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ColorGrading {
+    pub shadows: Option<ColorGradingWheel>,
+    pub midtones: Option<ColorGradingWheel>,
+    pub highlights: Option<ColorGradingWheel>,
+    pub global: Option<ColorGradingWheel>,
+    /// How far the tonal ranges reach into each other, 0..100 (default 50)
+    pub blending: Option<f64>,
+    /// Shifts the split between shadows and highlights, -100..100
+    pub balance: Option<f64>,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoWork {
@@ -158,6 +185,7 @@ pub struct PhotoWork {
     pub rotation_turns: Option<u8>,
     pub tilt: Option<f64>,
     pub crop_rect: Option<crate::types::geometry_types::Rect>,
+    pub color_grading: Option<ColorGrading>,
     pub flagged: Option<bool>,
     pub tags: Option<Vec<String>>,
 }

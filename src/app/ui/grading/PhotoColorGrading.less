@@ -1,0 +1,318 @@
+@import "../../style/variables.less";
+
+@paddingX: 18px;
+
+.PhotoColorGrading {
+    display: flex;
+    flex-direction: column;
+    background: @glassBg;
+    -webkit-backdrop-filter: @blurPanel;
+    backdrop-filter: @blurPanel;
+    // Panel on the left of the photo: hairline and shadow on its right edge
+    border-right: 1px solid @glassBorder;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.22);
+}
+
+.PhotoColorGrading-topBar {
+    flex: 0 0 auto;
+    padding-left: @paddingX - 1px;
+    border-left: none;
+    background: transparent;
+    box-shadow: none;
+    border-bottom: none;
+}
+
+.PhotoColorGrading-body {
+    flex: 1 0 0;
+    overflow-y: auto;
+}
+
+.PhotoColorGrading-title {
+    font-size: 16px;
+    font-weight: 600;
+
+    // Never shrink: the close button next to it may grow (`flex: 1 0 auto` in Toolbar.less), and a
+    // squeezed title would wrap its (CJK) characters vertically, one per line.
+    flex: 0 0 auto;
+    white-space: nowrap;
+    line-height: @toolbarHeight;
+}
+
+.PhotoColorGrading-content {
+    padding: 0 0 16px;
+}
+
+.PhotoColorGrading-histogram {
+    margin: 0 0 4px;
+}
+
+.PhotoColorGrading-editHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px @paddingX 8px;
+}
+
+.PhotoColorGrading-editTitle {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.PhotoColorGrading-editButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.PhotoColorGrading-textButton {
+    font-size: 12.5px;
+    padding: 2px 8px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    &.isActive {
+        background: rgba(255, 255, 255, 0.16);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+}
+
+.PhotoColorGrading-section {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    &.isDisabled .PhotoColorGrading-sectionBody {
+        opacity: 0.4;
+    }
+}
+
+.PhotoColorGrading-sectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px @paddingX;
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+}
+
+.PhotoColorGrading-sectionChevron {
+    opacity: 0.7;
+}
+
+.PhotoColorGrading-sectionTitle {
+    flex: 1 1 auto;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.PhotoColorGrading-eye {
+    padding: 2px;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.12);
+        opacity: 1;
+    }
+}
+
+.PhotoColorGrading-sectionBody {
+    padding: 0 @paddingX 10px;
+}
+
+.PhotoColorGrading-subTitle {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin: 10px 0 2px;
+}
+
+.PhotoColorGrading-wbRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0 2px;
+}
+
+.PhotoColorGrading-wbLabel {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.PhotoColorGrading-wbDropdown {
+    position: relative;
+}
+
+.PhotoColorGrading-wbMenu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    z-index: 10;
+    min-width: 130px;
+    padding: 4px 0;
+    border-radius: 4px;
+    background: #2f343c;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.PhotoColorGrading-wbMenuItem {
+    display: block;
+    width: 100%;
+    padding: 4px 12px;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 12.5px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    &.isActive {
+        background: rgba(255, 255, 255, 0.16);
+    }
+}
+
+.PhotoColorGrading-bandRow {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    padding: 6px 0 8px;
+}
+
+.PhotoColorGrading-bandDot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    position: relative;
+
+    &.isActive::after {
+        content: '';
+        position: absolute;
+        inset: -3.5px;
+        border-radius: 50%;
+        border: 1.5px solid rgba(255, 255, 255, 0.9);
+    }
+
+    &.isActive::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: #fff;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.PhotoColorGrading-modeRow {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 14px;
+}
+
+.PhotoColorGrading-modeButton {
+    min-width: 30px;
+    min-height: 28px;
+    padding: 0 6px;
+    border-radius: 4px;
+
+    &.isActive {
+        background: rgba(255, 255, 255, 0.16);
+    }
+}
+
+.PhotoColorGrading-wheels3way {
+    .PhotoColorGrading-wheelSlotRow.isMidtones {
+        margin-bottom: 14px;
+    }
+}
+
+.PhotoColorGrading-wheelSlotRow {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+.PhotoColorGrading-wheelSlot {
+    flex: 0 0 auto;
+}
+
+.PhotoColorGrading-wheel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.PhotoColorGrading-wheelLabel {
+    margin-top: 6px;
+    font-size: 11px;
+    opacity: 0.75;
+}
+
+.PhotoColorGrading-single {
+    .PhotoColorGrading-wheelSlotRow.isLarge {
+        margin: 4px 0 10px;
+    }
+}
+
+.PhotoColorGrading-sliderRow {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.PhotoColorGrading-sliderLabel {
+    flex: 0 0 62px;
+    font-size: 12px;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+
+.PhotoColorGrading-slider {
+    flex: 1 1 100%;
+    margin: 0 8px;
+    min-width: 0;
+}
+
+.PhotoColorGrading-sliderValue {
+    flex: 0 0 34px;
+    text-align: right;
+    font-size: 11px;
+    opacity: 0.75;
+    font-variant-numeric: tabular-nums;
+}
+
+.PhotoColorGrading-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+}

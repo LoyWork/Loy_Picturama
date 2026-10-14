@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: `Non lu par Picturama`,
     PhotoInfo_error_fetchPhotoSize: 'Obtention de la taille de la photo échouée',
 
+    PhotoActionButtons_colorGrading: 'Étalonnage',
+
+    PhotoColorGrading_title: 'Étalonnage',
+    PhotoColorGrading_mode_global: 'Global',
+    PhotoColorGrading_mode_3way: '3 voies',
+    PhotoColorGrading_mode_shadows: 'Ombres',
+    PhotoColorGrading_mode_midtones: 'Tons moyens',
+    PhotoColorGrading_mode_highlights: 'Hautes lumières',
+    PhotoColorGrading_blending: 'Fondu',
+    PhotoColorGrading_balance: 'Équilibre',
+    PhotoColorGrading_saturation: 'Saturation',
+    PhotoColorGrading_luminance: 'Luminance',
+    PhotoColorGrading_reset: 'Réinitialiser',
+    PhotoColorGrading_hint: 'Faites glisser une molette pour régler teinte et saturation. Maj conserve la teinte, Ctrl/Cmd la saturation, Alt pour un réglage fin. Double-clic pour réinitialiser la molette.',
+
     RotateButtonGroup_rotateLeft: 'Rotation à gauche',
     RotateButtonGroup_rotateRight: 'Rotation à droite',
 

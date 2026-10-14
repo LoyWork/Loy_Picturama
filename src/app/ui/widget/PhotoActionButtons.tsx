@@ -15,7 +15,7 @@ import { formatNumber } from 'app/util/TextUtil'
 import RotateButtonGroup from './RotateButtonGroup'
 
 
-type CommandKeys = 'toggleFlagged' | 'moveToTrash' | 'toggleInfo'
+type CommandKeys = 'toggleFlagged' | 'moveToTrash' | 'toggleInfo' | 'toggleGrading'
 
 
 interface Props {
@@ -24,8 +24,15 @@ interface Props {
     selectedPhotos: PhotoCollection | null
     isShowingTrash: boolean
     isShowingInfo: boolean
+    isShowingColorGrading: boolean
+    /**
+     * Whether the color grading button is shown at all. It lives in the library top bar and
+     * the detail view top bar; passing `false` hides it (e.g. where grading makes no sense).
+     */
+    showGradingButton?: boolean
     photoActionController: PhotoActionController
     toggleShowInfo: () => void
+    toggleShowGrading: () => void
 }
 
 export default class PhotoActionButtons extends React.Component<Props> {
@@ -35,7 +42,7 @@ export default class PhotoActionButtons extends React.Component<Props> {
 
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'onRotate', 'toggleFlagged', 'moveToTrash', 'restoreFromTrash', 'openExport', 'toggleShowInfo')
+        bindMany(this, 'onRotate', 'toggleFlagged', 'moveToTrash', 'restoreFromTrash', 'openExport', 'toggleShowInfo', 'toggleShowGrading')
 
         const hasSelection = () => getCollectionSize(this.props.selectedPhotos) > 0
         this.commands = {
@@ -51,6 +58,12 @@ export default class PhotoActionButtons extends React.Component<Props> {
                 enabled: () => hasSelection() || this.props.isShowingInfo,
                 label: msg('PhotoActionButtons_photoInfo'),
                 onAction: this.toggleShowInfo
+            },
+            toggleGrading: {
+                combo: 'g',
+                enabled: () => hasSelection() || this.props.isShowingColorGrading,
+                label: msg('PhotoActionButtons_colorGrading'),
+                onAction: this.toggleShowGrading
             },
         }
     }
@@ -127,6 +140,10 @@ export default class PhotoActionButtons extends React.Component<Props> {
         this.props.toggleShowInfo()
     }
 
+    private toggleShowGrading() {
+        this.props.toggleShowGrading()
+    }
+
     render() {
         const { props, commands } = this
         const hasSelection = getCollectionSize(props.selectedPhotos) > 0
@@ -171,6 +188,14 @@ export default class PhotoActionButtons extends React.Component<Props> {
                         <MdRestoreFromTrash/>
                         <span className={Classes.BUTTON_TEXT}>{msg('PhotoActionButtons_restore')}</span>
                     </Button>
+                }
+                {props.showGradingButton !== false &&
+                    <Button
+                        minimal
+                        icon='tint'
+                        active={props.isShowingColorGrading}
+                        {...getCommandButtonProps(commands.toggleGrading)}
+                    />
                 }
                 <Button
                     minimal

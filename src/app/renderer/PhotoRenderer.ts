@@ -116,6 +116,7 @@ async function renderNext(job: RenderJob): Promise<BinaryString> {
         .setSize(cameraMetrics.canvasSize)
         .setProjectionMatrix(cameraMetrics.projectionMatrix)
         .setCameraMatrix(cameraMetrics.cameraMatrix)
+        .setColorGrading(source.type === 'photo' ? source.photoWork.colorGrading || null : null)
         .update()
     if (profiler) profiler.addPoint('Rendered canvas')
 

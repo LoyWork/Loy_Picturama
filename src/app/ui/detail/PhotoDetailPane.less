@@ -11,8 +11,15 @@
     left: 0;
     right: 0;
 
-    .PhotoDetailPane.hasRightSidebar & {
+    // One open sidebar (info or grading) takes one column
+    .PhotoDetailPane.hasRightSidebar &,
+    .PhotoDetailPane.hasGradingSidebar & {
         right: @sidebarWidth;
+    }
+
+    // Both open take two columns
+    .PhotoDetailPane.hasGradingSidebar.hasRightSidebar & {
+        right: 2 * @sidebarWidth;
     }
 }
 .PhotoDetailPane-topBar {
@@ -55,10 +62,26 @@
     bottom: 0;
     right: -@sidebarWidth;
     width: @sidebarWidth;
-    transition: right @transition-time ease-out;
 
     .PhotoDetailPane.hasRightSidebar & {
         right: 0;
+    }
+}
+// The color grading panel sits to the left of the info panel (both on the right side of the
+// window; grading is the left one of the two, and pushes further left when info is also open)
+.PhotoDetailPane-leftSidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: -@sidebarWidth;
+    width: @sidebarWidth;
+
+    .PhotoDetailPane.hasGradingSidebar & {
+        right: 0;
+    }
+
+    .PhotoDetailPane.hasGradingSidebar.hasRightSidebar & {
+        right: @sidebarWidth;
     }
 }
 

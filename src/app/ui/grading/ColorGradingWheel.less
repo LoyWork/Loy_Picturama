@@ -1,0 +1,56 @@
+.ColorGradingWheel {
+    display: block;
+    position: relative;
+    touch-action: none;   // Pointer capture on touch devices
+    cursor: crosshair;
+}
+
+.ColorGradingWheel-readout {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.ColorGradingWheel-canvasWrap {
+    position: relative;
+    display: block;
+    touch-action: none;
+}
+
+.ColorGradingWheel-canvas {
+    display: block;
+    touch-action: none;
+    cursor: crosshair;
+}
+
+.ColorGradingWheel-eye {
+    position: absolute;
+    left: 0;
+    bottom: 2px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 3px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.15);
+    }
+
+    &.isHidden {
+        color: rgba(255, 255, 255, 0.45);
+    }
+}

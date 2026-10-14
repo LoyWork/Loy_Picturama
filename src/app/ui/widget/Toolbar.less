@@ -14,7 +14,9 @@
     box-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
     padding: 0 4px;
     padding-right: 4px;
-    transition: all @transition-time ease-out;
+    // Only visual properties, not position: animating `all` would slide the top bar whenever
+    // the parent layout moves it (e.g. when info/grading sidebars open in the detail view)
+    transition: background-color @transition-time ease-out, border-color @transition-time ease-out;
 
     user-select: none;
     -webkit-user-select: none;

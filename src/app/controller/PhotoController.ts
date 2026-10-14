@@ -67,7 +67,7 @@ export function onPhotosTrashed(result: EmptyTrashResult) {
 // We queue pending PhotoWork updates, so we don't get lost updates if multiple updates wait for fetching to finish
 const pendingUpdates: { photo: Photo, updates: ((photoWork: PhotoWork) => void)[] }[] = []
 
-export function updatePhotoWork(photo: Photo, update: (photoWork: PhotoWork) => void) {
+export function updatePhotoWork(photo: Photo, update: (photoWork: PhotoWork) => void, thumbnailNeedsUpdateOverride?: boolean) {
     const photoPath = getMasterPath(photo)
     let pendingUpdate = pendingUpdates[photoPath]
     if (pendingUpdate) {
@@ -87,11 +87,12 @@ export function updatePhotoWork(photo: Photo, update: (photoWork: PhotoWork) => 
                 }
                 delete pendingUpdates[photoPath]
 
-                // Ignore changes on meta data (like flagged or tags)
-                const thumbnailNeedsUpdate =
-                    photoWork.rotationTurns !== photoWorkBefore.rotationTurns ||
+                // Ignore changes on meta data (like flagged or tags). Color grading changes the
+                // rendered pixels but not the geometry, so it refreshes thumbnails via the override.
+                const thumbnailNeedsUpdate = thumbnailNeedsUpdateOverride ??
+                    (photoWork.rotationTurns !== photoWorkBefore.rotationTurns ||
                     photoWork.tilt !== photoWorkBefore.tilt ||
-                    photoWork.cropRect !== photoWorkBefore.cropRect
+                    photoWork.cropRect !== photoWorkBefore.cropRect)
 
                 // We do all in parallel:
                 //   - Show the new effects in UI

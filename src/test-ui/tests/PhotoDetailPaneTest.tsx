@@ -23,6 +23,7 @@ function createDefaultProps(context: TestContext): Props {
         isFirst: true,
         isLast: false,
         showInfo: false,
+        showGrading: !!context.state.showGrading,
         infoPhoto: undefined,
         infoPhotoData: undefined,
         photoActionController: mockPhotoActionController,
@@ -32,6 +33,10 @@ function createDefaultProps(context: TestContext): Props {
         setPhotoTags: action('setPhotoTags'),
         setShowInfo(showInfo: boolean) {
             context.state.showInfo = showInfo
+            context.forceUpdate()
+        },
+        setShowGrading(showGrading: boolean) {
+            context.state.showGrading = showGrading
             context.forceUpdate()
         },
         closeDetail: action('closeDetail'),

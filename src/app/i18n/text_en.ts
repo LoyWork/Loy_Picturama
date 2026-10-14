@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: 'Not read by Picturama',
     PhotoInfo_error_fetchPhotoSize: 'Getting photo size failed',
 
+    PhotoActionButtons_colorGrading: 'Color grading',
+
+    PhotoColorGrading_title: 'Color grading',
+    PhotoColorGrading_mode_global: 'Global',
+    PhotoColorGrading_mode_3way: '3-Way',
+    PhotoColorGrading_mode_shadows: 'Shadows',
+    PhotoColorGrading_mode_midtones: 'Midtones',
+    PhotoColorGrading_mode_highlights: 'Highlights',
+    PhotoColorGrading_blending: 'Blending',
+    PhotoColorGrading_balance: 'Balance',
+    PhotoColorGrading_saturation: 'Saturation',
+    PhotoColorGrading_luminance: 'Luminance',
+    PhotoColorGrading_reset: 'Reset',
+    PhotoColorGrading_hint: 'Drag a wheel to set hue and saturation. Shift keeps the hue, Ctrl/Cmd keeps the saturation, Alt fine-adjusts. Double-click a wheel to reset it.',
+
     RotateButtonGroup_rotateLeft: 'Rotate left',
     RotateButtonGroup_rotateRight: 'Rotate right',
 

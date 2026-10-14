@@ -1,0 +1,79 @@
+.DevelopSlider {
+    display: block;
+    padding: 5px 0 2px;
+
+    &.isDisabled {
+        opacity: 0.4;
+        pointer-events: none;
+    }
+}
+
+.DevelopSlider-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+
+.DevelopSlider-label {
+    font-size: 12px;
+    opacity: 0.9;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.DevelopSlider-value,
+.DevelopSlider-valueInput {
+    font-size: 12px;
+    opacity: 0.9;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+}
+
+.DevelopSlider-value {
+    cursor: text;
+}
+
+.DevelopSlider-valueInput {
+    width: 64px;
+    text-align: right;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 3px;
+    color: inherit;
+    padding: 0 3px;
+    outline: none;
+}
+
+.DevelopSlider-track {
+    position: relative;
+    height: 4px;
+    border-radius: 2px;
+    cursor: ew-resize;
+    touch-action: none;
+}
+
+.DevelopSlider-zero {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateX(-0.5px);
+    pointer-events: none;
+}
+
+.DevelopSlider-thumb {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    // hollow ring over a gap in the track (the gap is faked with a border in the panel colour)
+    background: transparent;
+    border: 2px solid rgba(235, 235, 235, 0.95);
+    box-shadow: 0 0 0 3px rgba(30, 30, 30, 0.9);
+    pointer-events: none;
+    box-sizing: border-box;
+}

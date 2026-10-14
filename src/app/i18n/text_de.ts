@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: 'Wird von Picturama nicht ausgelesen',
     PhotoInfo_error_fetchPhotoSize: 'Fotogröße konnte nicht ermittelt werden',
 
+    PhotoActionButtons_colorGrading: 'Farbkorrektur',
+
+    PhotoColorGrading_title: 'Farbkorrektur',
+    PhotoColorGrading_mode_global: 'Global',
+    PhotoColorGrading_mode_3way: '3-Wege',
+    PhotoColorGrading_mode_shadows: 'Tiefschatten',
+    PhotoColorGrading_mode_midtones: 'Mitteltöne',
+    PhotoColorGrading_mode_highlights: 'Lichter',
+    PhotoColorGrading_blending: 'Überblendung',
+    PhotoColorGrading_balance: 'Balance',
+    PhotoColorGrading_saturation: 'Sättigung',
+    PhotoColorGrading_luminance: 'Luminanz',
+    PhotoColorGrading_reset: 'Zurücksetzen',
+    PhotoColorGrading_hint: 'Rad ziehen, um Farbton und Sättigung einzustellen. Shift hält den Farbton, Ctrl/Cmd die Sättigung, Alt für Feineinstellung. Doppelklick setzt das Rad zurück.',
+
     RotateButtonGroup_rotateLeft: 'Nach links drehen',
     RotateButtonGroup_rotateRight: 'Nach rechts drehen',
 

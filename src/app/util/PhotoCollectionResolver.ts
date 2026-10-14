@@ -145,6 +145,61 @@ const getPhotosOfSelection = (() => {
 })()
 
 
+/**
+ * Returns the first photo of a collection (in library order) together with its section id, or
+ * `null` if the collection is empty. Selections which span not-yet-loaded sections contribute
+ * only their loaded photos.
+ */
+export function getFirstPhotoOfCollection(photos: PhotoCollection | null | undefined): { photo: Photo, sectionId: PhotoSectionId } | null {
+    let first: { photo: Photo, sectionId: PhotoSectionId } | null = null
+    if (photos) {
+        if (isPhoto(photos)) {
+            // A bare photo does not carry its section id; look it up in the loaded sections
+            const state = store.getState()
+            for (const sectionId of state.data.sections.ids) {
+                const section = state.data.sections.byId[sectionId]
+                if (isLoadedPhotoSection(section) && section.photoData[photos.id]) {
+                    first = { photo: photos, sectionId }
+                    break
+                }
+            }
+        } else if (Array.isArray(photos)) {
+            const firstPhoto = photos[0]
+            if (firstPhoto) {
+                first = getFirstPhotoOfCollection(firstPhoto)
+            }
+        } else if (isSelectionState(photos)) {
+            const state = store.getState()
+            for (const sectionId of state.data.sections.ids) {
+                const sectionSelection = photos.sectionSelectionById[sectionId]
+                const section = state.data.sections.byId[sectionId]
+                if (sectionSelection && isLoadedPhotoSection(section)) {
+                    const { selectedPhotosById } = sectionSelection
+                    for (const photoId of section.photoIds) {
+                        if (selectedPhotosById === 'all' || selectedPhotosById[photoId]) {
+                            first = { photo: section.photoData[photoId], sectionId }
+                            break
+                        }
+                    }
+                }
+                if (first) {
+                    break
+                }
+            }
+        } else {
+            // PhotoLibraryPosition
+            const state = store.getState()
+            const section = state.data.sections.byId[photos.sectionId]
+            const photo = isLoadedPhotoSection(section) ? section.photoData[photos.photoId] : undefined
+            if (photo) {
+                first = { photo, sectionId: photos.sectionId }
+            }
+        }
+    }
+    return first
+}
+
+
 export function getCollectionSize(photos: PhotoCollection | null | undefined): number {
     if (!photos) {
         return 0

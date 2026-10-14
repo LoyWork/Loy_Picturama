@@ -129,6 +129,8 @@ export type DetailState = {
 export interface InfoState {
     readonly showInLibrary: boolean
     readonly showInDetail: boolean
+    /** Whether the colour grading panel is shown in the detail view */
+    readonly showGradingInDetail: boolean
     readonly photoData?: InfoPhotoData
 }
 

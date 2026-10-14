@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: 'Не прочитано программой Picturama',
     PhotoInfo_error_fetchPhotoSize: 'Не удалось получить размер фотографии',
 
+    PhotoActionButtons_colorGrading: 'Цветокоррекция',
+
+    PhotoColorGrading_title: 'Цветокоррекция',
+    PhotoColorGrading_mode_global: 'Global',
+    PhotoColorGrading_mode_3way: 'Трёхканальная',
+    PhotoColorGrading_mode_shadows: 'Тени',
+    PhotoColorGrading_mode_midtones: 'Средние тона',
+    PhotoColorGrading_mode_highlights: 'Света',
+    PhotoColorGrading_blending: 'Смешивание',
+    PhotoColorGrading_balance: 'Баланс',
+    PhotoColorGrading_saturation: 'Насыщенность',
+    PhotoColorGrading_luminance: 'Яркость',
+    PhotoColorGrading_reset: 'Сбросить',
+    PhotoColorGrading_hint: 'Перетащите колесо, чтобы задать оттенок и насыщенность. Shift фиксирует оттенок, Ctrl/Cmd — насыщенность, Alt — точная настройка. Двойной щелчок сбрасывает колесо.',
+
     RotateButtonGroup_rotateLeft: 'Повернуть влево',
     RotateButtonGroup_rotateRight: 'Повернуть вправо',
 

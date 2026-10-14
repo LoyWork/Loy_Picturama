@@ -3,7 +3,7 @@ import classnames from 'classnames'
 import { ResizeSensor, IResizeEntry, Spinner, NonIdealState, Classes, Button, Intent } from '@blueprintjs/core'
 import { FaRegCircle } from 'react-icons/fa'
 
-import { PhotoWork, PhotoSectionId, Photo } from 'app/CommonTypes'
+import { PhotoWork, PhotoSectionId, Photo, ColorGrading, DevelopSettings } from 'app/CommonTypes'
 import { msg } from 'app/i18n/i18n'
 import { addCommandGroup, Command, CommandGroupId, getCommandButtonProps, removeCommandGroup, setCommandGroupEnabled } from 'app/controller/HotkeyController'
 import { LibrarySelectionController } from 'app/controller/LibrarySelectionController'
@@ -14,6 +14,7 @@ import RedCheckCircle from 'app/ui/widget/icon/RedCheckCircle'
 import PhotoActionButtons from 'app/ui/widget/PhotoActionButtons'
 import { showPhotoContextMenu } from 'app/ui/widget/PhotoContextMenu'
 import { CameraMetrics, CameraMetricsBuilder, RequestedPhotoPosition, PhotoPosition } from 'app/util/CameraMetrics'
+import { HistogramData } from 'app/util/DevelopUtil'
 import { Size, zeroSize, Insets, zeroInsets, Rect } from 'app/util/GeometryTypes'
 import { bindMany, isShallowEqual } from 'app/util/LangUtil'
 
@@ -38,6 +39,7 @@ export interface Props {
     isActive: boolean
     mode: DetailMode
     isShowingInfo: boolean
+    isShowingColorGrading: boolean
     sectionId: PhotoSectionId
     photo: Photo
     isFirst: boolean
@@ -46,12 +48,18 @@ export interface Props {
     imagePathPrev: string | null
     imagePathNext: string | null
     photoWork: PhotoWork | null
+    /** The color grading to render (the live preview from the grading panel, or the saved one) */
+    colorGrading: ColorGrading | null
+    /** The develop settings to render (the live preview, or the saved ones) */
+    develop: DevelopSettings | null
+    onHistogramChange(histogram: HistogramData | null): void
     photoActionController: PhotoActionController
     librarySelectionController: LibrarySelectionController
     setMode(mode: DetailMode): void
     setPreviousDetailPhoto(): void
     setNextDetailPhoto(): void
     toggleShowInfo(): void
+    toggleShowGrading(): void
     closeDetail(): void
 }
 
@@ -248,14 +256,17 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
                     imagePathPrev={props.imagePathPrev}
                     imagePathNext={props.imagePathNext}
                     cameraMetrics={state.cameraMetrics}
+                    colorGrading={props.colorGrading}
+                    develop={props.develop}
                     onLoadingStateChange={this.onLoadingStateChange}
                     onTextureChange={this.onTextureChange}
+                    onHistogramChange={props.onHistogramChange}
                 />
                 {props.mode === 'view' &&
                     <ViewModeLayer
                         topBarClassName={props.topBarClassName}
                         bodyClassName={props.bodyClassName}
-                        isTopBarRight={!props.isShowingInfo}
+                        isTopBarRight={!props.isShowingInfo && !props.isShowingColorGrading}
                         topBarRightItem={
                             <>
                                 <PhotoActionButtons
@@ -263,8 +274,10 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
                                     selectedPhotos={props.photo}
                                     isShowingTrash={!!props.photo.trashed}
                                     isShowingInfo={props.isShowingInfo}
+                                    isShowingColorGrading={props.isShowingColorGrading}
                                     photoActionController={props.photoActionController}
                                     toggleShowInfo={props.toggleShowInfo}
+                                    toggleShowGrading={props.toggleShowGrading}
                                 />
                                 <Button
                                     className='PhotoDetailBody-toggleSelected'

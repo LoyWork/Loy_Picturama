@@ -1,12 +1,13 @@
 
 import { Action } from 'app/state/ActionType'
-import { SET_SHOW_INFO, SET_INFO_PHOTO_DATA, SET_PHOTO_TAGS } from 'app/state/actionTypes'
+import { SET_SHOW_INFO, SET_SHOW_GRADING, SET_INFO_PHOTO_DATA, SET_PHOTO_TAGS } from 'app/state/actionTypes'
 import { InfoPhotoDataState, InfoState, LibraryState } from 'app/state/StateTypes'
 
 
 const initialInfoState: InfoState = {
     showInLibrary: false,
     showInDetail: false,
+    showGradingInDetail: false,
 }
 
 export const info = (state: InfoState = initialInfoState, libraryState: LibraryState, action: Action): InfoState => {
@@ -22,6 +23,11 @@ export const info = (state: InfoState = initialInfoState, libraryState: LibraryS
                     ...state,
                     showInDetail: action.payload.showInfo
                 }
+            }
+        case SET_SHOW_GRADING:
+            return {
+                ...state,
+                showGradingInDetail: action.payload.showGrading
             }
         case SET_INFO_PHOTO_DATA:
             if (action.payload.photoId === state.photoData?.photoId) {

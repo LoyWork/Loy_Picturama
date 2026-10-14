@@ -168,6 +168,21 @@ export default {
     PhotoInfo_segmentNotRead: 'Aplikace Picturama nečte',
     PhotoInfo_error_fetchPhotoSize: 'Zjištění velikosti fotografie selhalo',
 
+    PhotoActionButtons_colorGrading: 'Barevná korekce',
+
+    PhotoColorGrading_title: 'Barevná korekce',
+    PhotoColorGrading_mode_global: 'Global',
+    PhotoColorGrading_mode_3way: 'Třícestná',
+    PhotoColorGrading_mode_shadows: 'Stíny',
+    PhotoColorGrading_mode_midtones: 'Střední tóny',
+    PhotoColorGrading_mode_highlights: 'Světla',
+    PhotoColorGrading_blending: 'Míchání',
+    PhotoColorGrading_balance: 'Vyvážení',
+    PhotoColorGrading_saturation: 'Sytost',
+    PhotoColorGrading_luminance: 'Jas',
+    PhotoColorGrading_reset: 'Obnovit',
+    PhotoColorGrading_hint: 'Tažením kolečka nastavíte odstín a sytost. Shift drží odstín, Ctrl/Cmd drží sytost, Alt jemné ladění. Dvojitým kliknutím kolečko obnovíte.',
+
     RotateButtonGroup_rotateLeft: 'Otočit doleva',
     RotateButtonGroup_rotateRight: 'Otočit doprava',
 

@@ -3,11 +3,14 @@ import React from 'react'
 import { findDOMNode } from 'react-dom'
 
 import { profileDetailView } from 'app/LogConstants'
+import { ColorGrading, DevelopSettings } from 'app/CommonTypes'
 import PhotoCanvas from 'app/renderer/PhotoCanvas'
 import { Texture } from 'app/renderer/WebGLCanvas'
 import { CameraMetrics } from 'app/util/CameraMetrics'
+import { HistogramData } from 'app/util/DevelopUtil'
 import { Size } from 'app/util/GeometryTypes'
-import { bindMany } from 'app/util/LangUtil'
+import { bindMany, isShallowEqual } from 'app/util/LangUtil'
+import { isNeutral } from 'app/util/ColorGradingUtil'
 
 import { DetailMode } from './DetailTypes'
 import TextureCache, { TextureError } from './TextureCache'
@@ -28,8 +31,13 @@ export interface Props {
     imagePathPrev: string | null
     imagePathNext: string | null
     cameraMetrics: CameraMetrics | null
+    colorGrading: ColorGrading | null
+    /** The develop settings to render (white balance, light, colour, vignette…) */
+    develop: DevelopSettings | null
     onLoadingStateChange(loadingState: PhotoLayerLoadingState): void
     onTextureChange(textureSize: Size): void
+    /** Reports the histogram of the rendered photo (null while no photo is rendered) */
+    onHistogramChange(histogram: HistogramData | null): void
 }
 
 export default class PhotoLayer extends React.Component<Props> {
@@ -140,6 +148,16 @@ export default class PhotoLayer extends React.Component<Props> {
             canvasChanged = true
         }
 
+        if (props.colorGrading !== prevProps.colorGrading) {
+            canvas.setColorGrading(isNeutral(props.colorGrading) ? null : props.colorGrading)
+            canvasChanged = true
+        }
+
+        if (props.develop !== prevProps.develop) {
+            canvas.setDevelop(props.develop)
+            canvasChanged = true
+        }
+
         if (canvasChanged) {
             if (props.cameraMetrics && canvas.isValid()) {
                 if (this.deferredHideCanvasTimeout) {
@@ -149,6 +167,7 @@ export default class PhotoLayer extends React.Component<Props> {
                 canvas.update()
                 canvas.getElement().style.display = 'block'
                 this.setLoadingState('done')
+                this.props.onHistogramChange(canvas.getHistogram())
             } else if (!this.deferredHideCanvasTimeout) {
                 // We hide the old image of an invalid canvas with a little delay,
                 // in order to avoid blinking if loading the next texture and photo work is fast
