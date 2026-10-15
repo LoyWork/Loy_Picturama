@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'Se štítkem:',
 
     FolderSidebar_title: "Složky",
+    FolderSidebar_resize: 'Tažením změňte šířku, dvojklikem obnovte',
+    FolderSidebar_openInExplorer: 'Otevřít v Průzkumníku',
     FolderSidebar_all: "Všechny fotky",
 
     LibraryTopBar_emptyTrashQuestion: 'Opravdu chcete vysypat koš?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Předchozí sekce: {0}',
     PhotoDetailPane_nextSection: 'Následující sekce: {0}',
     PhotoDetailPane_edit: 'Editovat',
+    PhotoDetailPane_fit: 'Přizpůsobit oknu',
+    PhotoDetailPane_zoom: 'Přiblížení',
 
     PhotoInfo_title: 'Informace',
     PhotoInfo_showInFolder: 'Zobrazit fotografii ve složce',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Barevná korekce',
 
     PhotoColorGrading_title: 'Barevná korekce',
+    PhotoColorGrading_save: 'Uložit úpravy',
+    PhotoColorGrading_saved: 'Uloženo',
+    PhotoColorGrading_saveFailed: 'Uložení selhalo. Zkuste znovu.',
+    PhotoColorGrading_saveHint: 'Úpravy se ukládají automaticky.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: 'Třícestná',
     PhotoColorGrading_mode_shadows: 'Stíny',

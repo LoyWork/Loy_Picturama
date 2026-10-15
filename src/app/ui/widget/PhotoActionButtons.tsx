@@ -31,6 +31,8 @@ interface Props {
      */
     showGradingButton?: boolean
     showPanelButtons?: boolean
+    showRotation?: boolean
+    rotationsOnly?: boolean
     photoActionController: PhotoActionController
     toggleShowInfo: () => void
     toggleShowGrading: () => void
@@ -43,7 +45,7 @@ export default class PhotoActionButtons extends React.Component<Props> {
 
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'onRotate', 'toggleFlagged', 'moveToTrash', 'restoreFromTrash', 'openExport', 'toggleShowInfo', 'toggleShowGrading')
+        bindMany(this, 'onRotate', 'toggleFlagged', 'moveToTrash', 'restoreFromTrash', 'toggleShowInfo', 'toggleShowGrading')
 
         const hasSelection = () => getCollectionSize(this.props.selectedPhotos) > 0
         this.commands = {
@@ -130,13 +132,6 @@ export default class PhotoActionButtons extends React.Component<Props> {
         }
     }
 
-    private openExport() {
-        const props = this.props
-        if (props.selectedPhotos) {
-            props.photoActionController.openExport(props.selectedPhotos)
-        }
-    }
-
     private toggleShowInfo() {
         this.props.toggleShowInfo()
     }
@@ -167,44 +162,49 @@ export default class PhotoActionButtons extends React.Component<Props> {
 
         return (
             <>
-                <RotateButtonGroup isActive={props.isActive} disabled={!hasSelection} onRotate={this.onRotate}/>
-                <Button
-                    icon={selectedAreFlagged ? 'star' : 'star-empty'}
-                    minimal
-                    active={selectedAreFlagged}
-                    disabled={!hasSelection}
-                    onClick={this.toggleFlagged}
-                    title={formatCommandLabel(msg(selectedAreFlagged ? 'PhotoActionButtons_removeFavorite' : 'PhotoActionButtons_addFavorite'), commands.toggleFlagged.combo)}
-                />
-                {!props.isShowingTrash &&
-                    <Button minimal icon="trash" {...getCommandButtonProps(commands.moveToTrash)}/>
+                {props.showRotation !== false &&
+                    <RotateButtonGroup isActive={props.isActive} disabled={!hasSelection} onRotate={this.onRotate}/>
                 }
-                {props.isShowingTrash &&
+                {!props.rotationsOnly && <>
                     <Button
-                        disabled={!hasSelection}
-                        intent={hasSelection ? 'success' : undefined}
-                        title={msg('PhotoActionButtons_restoreFromTrash')}
-                        onClick={this.restoreFromTrash}
-                    >
-                        <MdRestoreFromTrash/>
-                        <span className={Classes.BUTTON_TEXT}>{msg('PhotoActionButtons_restore')}</span>
-                    </Button>
-                }
-                {props.showPanelButtons !== false && props.showGradingButton !== false &&
-                    <Button
+                        icon={selectedAreFlagged ? 'star' : 'star-empty'}
                         minimal
-                        icon='tint'
-                        active={props.isShowingColorGrading}
-                        {...getCommandButtonProps(commands.toggleGrading)}
+                        active={selectedAreFlagged}
+                        aria-pressed={selectedAreFlagged}
+                        aria-label={msg(selectedAreFlagged ? 'PhotoActionButtons_removeFavorite' : 'PhotoActionButtons_addFavorite')}
+                        disabled={!hasSelection}
+                        onClick={this.toggleFlagged}
+                        title={formatCommandLabel(msg(selectedAreFlagged ? 'PhotoActionButtons_removeFavorite' : 'PhotoActionButtons_addFavorite'), commands.toggleFlagged.combo)}
                     />
-                }
-                {props.showPanelButtons !== false && <Button
-                    minimal
-                    icon='info-sign'
-                    active={props.isShowingInfo}
-                    {...getCommandButtonProps(commands.toggleInfo)}
-                />}
-                <Button minimal icon='export' disabled={!hasSelection} onClick={this.openExport} title={msg('PhotoActionButtons_export')}/>
+                    {!props.isShowingTrash &&
+                        <Button minimal icon="trash" {...getCommandButtonProps(commands.moveToTrash)}/>
+                    }
+                    {props.isShowingTrash &&
+                        <Button
+                            disabled={!hasSelection}
+                            intent={hasSelection ? 'success' : undefined}
+                            title={msg('PhotoActionButtons_restoreFromTrash')}
+                            onClick={this.restoreFromTrash}
+                        >
+                            <MdRestoreFromTrash/>
+                            <span className={Classes.BUTTON_TEXT}>{msg('PhotoActionButtons_restore')}</span>
+                        </Button>
+                    }
+                    {props.showPanelButtons !== false && props.showGradingButton !== false &&
+                        <Button
+                            minimal
+                            icon='tint'
+                            active={props.isShowingColorGrading}
+                            {...getCommandButtonProps(commands.toggleGrading)}
+                        />
+                    }
+                    {props.showPanelButtons !== false && <Button
+                        minimal
+                        icon='info-sign'
+                        active={props.isShowingInfo}
+                        {...getCommandButtonProps(commands.toggleInfo)}
+                    />}
+                </>}
             </>
         )    
     }

@@ -30,37 +30,60 @@ pub fn fetch_active_photo_paths(db: &DbHandle) -> Result<Vec<String>, String> {
 }
 
 // ---------------------------------------------------------------------------
-// Folders (top-level directories inside the photo roots, for the sidebar)
+// Folders (all image-bearing directories and their ancestors inside the photo roots)
 // ---------------------------------------------------------------------------
 
-/// The top-level folders inside `photo_roots` that contain non-trashed photos, sorted by name.
-/// A photo's top-level folder is the first path segment of its `master_dir` after the photo root it
-/// lies in; photos directly in a root have no folder and are only reachable via the "all" filter.
+/// Imported, non-trashed photos are the source of valid image directories. Include every ancestor
+/// needed to reach them, but never enumerate empty/unsupported-only directories from disk.
 pub fn fetch_photo_folders(db: &DbHandle, photo_roots: &[String]) -> Result<Vec<PhotoFolder>, String> {
     let conn = db.lock().unwrap();
-    let mut stmt = conn
-        .prepare("SELECT master_dir, count(*) FROM photos WHERE trashed = 0 GROUP BY master_dir")
+    let mut stmt = conn.prepare("SELECT master_dir, count(*) FROM photos WHERE trashed = 0 GROUP BY master_dir")
         .map_err(|e| e.to_string())?;
-    let rows: Vec<(String, u32)> = stmt
-        .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+    let rows = stmt.query_map([], |row| Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?)))
         .map_err(|e| e.to_string())?
-        .filter_map(|r| r.ok())
-        .collect();
-    drop(stmt);
-    drop(conn);
-
-    // Counts keyed by folder name, insertion-ordered so the final list is sorted by name.
-    let mut counts: std::collections::BTreeMap<String, u32> = std::collections::BTreeMap::new();
-    for (master_dir, count) in rows {
-        if let Some(folder) = top_level_folder(&master_dir, photo_roots) {
-            *counts.entry(folder).or_insert(0) += count;
+        .collect::<rusqlite::Result<Vec<_>>>().map_err(|e| e.to_string())?;
+    let mut folders = std::collections::BTreeMap::<String, PhotoFolder>::new();
+    for (dir, count) in rows {
+        let dir = normalise_path(&dir);
+        let mut visited = std::collections::HashSet::new();
+        for root in photo_roots {
+            let root = normalise_path(root);
+            if !path_is_within(&dir, &root) { continue; }
+            let mut path = root.clone();
+            let mut parent_path = None;
+            let mut depth = 0;
+            let rest = dir[root.len()..].trim_start_matches('/');
+            for segment in std::iter::once("").chain(rest.split('/').filter(|s| !s.is_empty())) {
+                if !segment.is_empty() {
+                    parent_path = Some(path.clone());
+                    path = format!("{}/{}", path, segment);
+                    depth += 1;
+                }
+                let key = path.to_lowercase();
+                if !visited.insert(key.clone()) { continue; }
+                let folder = folders.entry(key).or_insert_with(|| PhotoFolder {
+                    name: path.rsplit('/').next().unwrap_or(&path).to_string(),
+                    path: path.clone(), parent_path: parent_path.clone(), depth, count: 0,
+                });
+                folder.count += count;
+            }
         }
     }
+    // Resolve nesting again after aggregation, including overlapping configured roots.
+    for key in folders.keys().cloned().collect::<Vec<_>>() {
+        let parent = folders[&key].path.rsplit_once('/').map(|(path, _)| path.to_lowercase());
+        let parent_info = parent.and_then(|parent| folders.get(&parent).map(|f| (f.path.clone(), f.depth + 1)));
+        let folder = folders.get_mut(&key).unwrap();
+        folder.parent_path = parent_info.as_ref().map(|(path, _)| path.clone());
+        folder.depth = parent_info.map_or(0, |(_, depth)| depth);
+    }
+    Ok(folders.into_values().collect())
+}
 
-    Ok(counts
-        .into_iter()
-        .map(|(name, count)| PhotoFolder { name, count })
-        .collect())
+fn path_is_within(path: &str, root: &str) -> bool {
+    path.eq_ignore_ascii_case(root) ||
+        (path.get(..root.len()).map_or(false, |prefix| prefix.eq_ignore_ascii_case(root)) &&
+         path.as_bytes().get(root.len()) == Some(&b'/'))
 }
 
 /// The name of the top-level folder `master_dir` lies in (the first path segment after the photo root
@@ -108,6 +131,12 @@ fn normalise_path(path: &str) -> String {
 /// the photo root had in the settings when it was scanned (`D:\dir/sub` on Windows), so the comparison
 /// must be separator-agnostic on the row side.
 fn folder_prefixes(folder: &str, photo_roots: &[String]) -> Vec<String> {
+    let folder = normalise_path(folder);
+    if folder.starts_with('/') || folder.as_bytes().get(1) == Some(&b':') {
+        return if photo_roots.iter().any(|root| path_is_within(&folder, &normalise_path(root))) {
+            vec![folder]
+        } else { vec![] };
+    }
     photo_roots
         .iter()
         .map(|root| format!("{}/{}", normalise_path(root), folder))
@@ -536,11 +565,13 @@ fn filter_where(filter: &PhotoFilter) -> (String, Vec<Value>) {
                 // One condition per photo root, OR-combined: a photo matches when it lies in the
                 // folder under *any* of the configured roots. AND-combining them (as a naïve
                 // condition-per-root loop would) can never match — a photo lives under one root.
-                let folder_conditions: Vec<String> = roots.iter().map(|_root| {
+                let prefixes = folder_prefixes(folder, roots);
+                if prefixes.is_empty() { return (format!("{} AND 0", sql), params); }
+                let folder_conditions: Vec<String> = prefixes.iter().map(|_| {
                     "(REPLACE(master_dir, '\\', '/') = ? OR REPLACE(master_dir, '\\', '/') LIKE ? ESCAPE '\\')".to_string()
                 }).collect();
                 sql += &format!(" AND ({})", folder_conditions.join(" OR "));
-                for prefix in folder_prefixes(folder, roots) {
+                for prefix in prefixes {
                     // The folder itself or anything inside it (subdirectories included). LIKE's
                     // wildcards in the folder name are escaped; the root needs no escaping: it was
                     // matched component-wise against the real directory, so it may contain wildcards.
@@ -659,9 +690,38 @@ mod tests {
         let folders = fetch_photo_folders(&db, &["C:/photos".to_string()]).unwrap();
 
         let names: Vec<&str> = folders.iter().map(|f| f.name.as_str()).collect();
-        assert_eq!(names, vec!["2025 Beijing", "2026 Chengdu"]);
-        assert_eq!(folders[0].count, 1);
-        assert_eq!(folders[1].count, 3);
+        assert_eq!(names, vec!["photos", "2025 Beijing", "2026 Chengdu", "day1"]);
+        assert_eq!(folders[0].count, 5);
+        assert_eq!(folders[1].count, 1);
+        assert_eq!(folders[2].count, 3);
+        assert_eq!(folders[3].count, 1);
+        assert_eq!(folders[3].parent_path.as_deref(), Some("C:/photos/2026 Chengdu"));
+        assert_eq!(folders[3].depth, 2);
+    }
+
+    #[test]
+    fn folders_keep_full_paths_and_exclude_empty_or_trash_only_branches() {
+        let conn = rusqlite::Connection::open_in_memory().unwrap();
+        conn.execute_batch("CREATE TABLE photos (master_dir text, trashed boolean DEFAULT 0);
+            INSERT INTO photos (master_dir) VALUES
+            ('C:/photos/same/deep/leaf'), ('D:/archive/same/deep/leaf'),
+            ('C:/photos2/outside');
+            INSERT INTO photos (master_dir, trashed) VALUES ('C:/photos/trash-only', 1);") .unwrap();
+        let db: DbHandle = std::sync::Arc::new(std::sync::Mutex::new(conn));
+        let roots = vec!["C:/photos".into(), "D:/archive".into(), "C:/photos/same".into()];
+        let folders = fetch_photo_folders(&db, &roots).unwrap();
+        assert_eq!(folders.len(), 8);
+        assert!(folders.iter().all(|f| f.count == 1)); // overlapping roots never double-count
+        assert!(folders.iter().any(|f| f.path == "C:/photos/same/deep/leaf" && f.depth == 3));
+        assert!(folders.iter().any(|f| f.path == "D:/archive/same/deep/leaf"));
+        assert!(!folders.iter().any(|f| f.path.contains("trash-only") || f.path.contains("outside")));
+        let selected = filter(PhotoFilterType::Folder, Some("C:/photos/same/deep/leaf"), &["C:/photos", "D:/archive"]);
+        let (sql, params) = filter_where(&selected);
+        let matched: u32 = db.lock().unwrap().query_row(&format!("SELECT count(*) FROM photos WHERE {}", sql),
+            rusqlite::params_from_iter(params.iter()), |row| row.get(0)).unwrap();
+        assert_eq!(matched, 1);
+        let outside = filter(PhotoFilterType::Folder, Some("C:/photos2/outside"), &["C:/photos"]);
+        assert!(filter_where(&outside).0.ends_with("AND 0"));
     }
 
     #[test]
@@ -741,6 +801,8 @@ mod tests {
         let chengdu = root.path.join("2026 Chengdu");
         std::fs::create_dir_all(&day1).unwrap();
         std::fs::create_dir_all(&chengdu).unwrap();
+        std::fs::create_dir_all(beijing.join("empty/child")).unwrap();
+        std::fs::write(chengdu.join("notes.txt"), "not an image").unwrap();
         write_png(&beijing, "b1.png", 4, 6);
         write_png(&day1, "d1.png", 8, 3);
         write_png(&chengdu, "c1.png", 9, 9);
@@ -780,12 +842,17 @@ mod tests {
 
         let roots = vec![root.str()];
 
-        // --- Folder listing: nested folders aggregate, the root-level photo is not a folder ---
+        // --- Folder listing: includes root photos and every image-bearing level ---
         let folders = fetch_photo_folders(&db, &roots).unwrap();
-        let names: Vec<&str> = folders.iter().map(|f| f.name.as_str()).collect();
-        assert_eq!(names, vec!["2025 Beijing", "2026 Chengdu"]);
-        assert_eq!(folders[0].count, 2); // b1.png + d1.png (nested)
-        assert_eq!(folders[1].count, 1);
+        let names: Vec<&str> = folders.iter().skip(1).map(|f| f.name.as_str()).collect();
+        assert_eq!(names, vec!["2025 Beijing", "day1", "2026 Chengdu"]);
+        assert_eq!(folders[0].count, 4);
+        assert_eq!(folders[1].count, 2); // b1.png + d1.png (nested)
+        assert_eq!(folders[2].count, 1);
+        assert_eq!(folders[3].count, 1);
+        let nested_filter = make_filter(PhotoFilterType::Folder, Some(&folders[2].path), &roots);
+        let nested_sections = fetch_sections(&db, &nested_filter, None).unwrap();
+        assert_eq!(nested_sections[0].count, 1);
 
         // --- Folder-filtered sections: "2025 Beijing" yields both its photos ---
         let filter = make_filter(PhotoFilterType::Folder, Some("2025 Beijing"), &roots);

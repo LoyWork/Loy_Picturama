@@ -4,6 +4,7 @@
 
 .Library {
     position: relative;
+    --folder-sidebar-width: @folderSidebarWidth;
 }
 .Library-topBar {
     position: absolute;
@@ -27,7 +28,7 @@
         right: @sidebarWidth + @photoToolsWidth;
     }
     .Library.hasSidebar & {
-        left: @folderSidebarWidth;
+        left: var(--folder-sidebar-width);
     }
 }
 .Library-bottomBar {
@@ -37,7 +38,7 @@
     transition: left @transition-time ease-out;
 
     .Library.hasSidebar & {
-        left: @folderSidebarWidth;
+        left: var(--folder-sidebar-width);
     }
 }
 
@@ -45,13 +46,41 @@
     position: absolute;
     top: @toolbarHeight;  // Below the top bar (Apple Photos layering)
     bottom: 0;
-    left: -@folderSidebarWidth;
-    width: @folderSidebarWidth;
+    left: calc(-1 * var(--folder-sidebar-width));
+    width: var(--folder-sidebar-width);
     transition: left @transition-time ease-out;
 
     .Library.hasSidebar & {
         left: 0;
     }
+}
+.Library-sidebarResize {
+    display: none;
+    position: absolute;
+    top: @toolbarHeight;
+    bottom: 0;
+    left: calc(var(--folder-sidebar-width) - 4px);
+    width: 8px;
+    z-index: 5;
+    cursor: col-resize;
+    touch-action: none;
+    outline: none;
+    .Library.hasSidebar & { display: block; }
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 3px;
+        width: 2px;
+        background: transparent;
+    }
+    &:hover::after, &:focus-visible::after,
+    .Library.isResizingSidebar &::after { background: @teal-300; }
+}
+.Library.isResizingSidebar {
+    &, * { cursor: col-resize !important; user-select: none; }
+    .Library-body, .Library-bottomBar, .Library-folderSidebar { transition: none; }
 }
 .Library-rightSidebar {
     position: absolute;

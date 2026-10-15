@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: '有标签：',
 
     FolderSidebar_title: '文件夹',
+    FolderSidebar_resize: '拖动调整文件夹栏宽度，双击恢复默认',
+    FolderSidebar_openInExplorer: '在 Windows 文件夹中打开',
     FolderSidebar_all: '全部照片',
 
     LibraryTopBar_emptyTrashQuestion: '你确定要清空垃圾桶吗?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: '上一个分组：{0}',
     PhotoDetailPane_nextSection: '下一个分组：{0}',
     PhotoDetailPane_edit: '编辑',
+    PhotoDetailPane_fit: '适应窗口',
+    PhotoDetailPane_zoom: '缩放',
 
     PhotoInfo_title: '信息',
     PhotoInfo_showInFolder: '在文件夹中显示照片',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: '调色',
 
     PhotoColorGrading_title: '调色',
+    PhotoColorGrading_save: '保存调整',
+    PhotoColorGrading_saved: '已保存',
+    PhotoColorGrading_saveFailed: '保存失败，请重试',
+    PhotoColorGrading_saveHint: '调整会自动保存，也可点击下方确认保存。',
     PhotoColorGrading_mode_global: '全局',
     PhotoColorGrading_mode_3way: '三向',
     PhotoColorGrading_mode_shadows: '阴影',

@@ -1,14 +1,14 @@
 import { Photo, PhotoWork } from 'app/CommonTypes'
 import { updatePhotoWork } from 'app/controller/PhotoController'
-import { updatePhotoWorkColorGrading, updatePhotoWorkDevelop } from 'app/controller/PhotoGradingController'
+import { updatePhotoWorkColorGrading, updatePhotoWorkDevelop, savePhotoGrading } from 'app/controller/PhotoGradingController'
 
 jest.mock('app/controller/PhotoController', () => ({ updatePhotoWork: jest.fn() }))
 const save = jest.mocked(updatePhotoWork)
 const photo = { masterDir: 'photos', masterFilename: 'first.jpg' } as Photo
 const grading = { shadows: { hue: 30, sat: 20 } }
 
-beforeEach(() => { jest.useFakeTimers(); save.mockClear() })
-afterEach(() => { jest.runOnlyPendingTimers(); jest.useRealTimers() })
+beforeEach(() => { jest.useFakeTimers(); save.mockClear(); save.mockResolvedValue(true) })
+afterEach(async () => { jest.runOnlyPendingTimers(); await savePhotoGrading(photo); jest.useRealTimers() })
 
 function savedWork(initial: PhotoWork = {}): PhotoWork {
     expect(save).toHaveBeenCalledTimes(1)
@@ -43,6 +43,30 @@ test('grading-only develop settings are persisted', () => {
     updatePhotoWorkDevelop(photo, { grading })
     jest.advanceTimersByTime(300)
     expect(savedWork()).toEqual({ colorGrading: grading, develop: { grading } })
+})
+
+test('Save flushes a pending gesture immediately and waits for persistence', async () => {
+    let finish!: (saved: boolean) => void
+    save.mockReturnValueOnce(new Promise<boolean>(resolve => { finish = resolve }))
+    updatePhotoWorkDevelop(photo, { light: { exposure: 2 } })
+    let confirmed = false
+    const completion = savePhotoGrading(photo).then(saved => { confirmed = saved })
+    expect(savedWork()).toEqual({ develop: { light: { exposure: 2 } } })
+    await Promise.resolve()
+    expect(confirmed).toBe(false)
+    finish(true)
+    await completion
+    expect(confirmed).toBe(true)
+    jest.advanceTimersByTime(300)
+    expect(save).toHaveBeenCalledTimes(1)
+})
+
+test('a failed Save can retry the same edit', async () => {
+    save.mockResolvedValueOnce(false)
+    updatePhotoWorkDevelop(photo, { light: { exposure: 1 } })
+    expect(await savePhotoGrading(photo)).toBe(false)
+    expect(await savePhotoGrading(photo)).toBe(true)
+    expect(save).toHaveBeenCalledTimes(2)
 })
 
 test('edits to different photos save independently and use the last slider value', () => {

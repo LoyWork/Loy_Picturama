@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'Avec tag:',
 
     FolderSidebar_title: "Dossiers",
+    FolderSidebar_resize: 'Glisser pour redimensionner, double-clic pour réinitialiser',
+    FolderSidebar_openInExplorer: 'Ouvrir le dossier Windows',
     FolderSidebar_all: "Toutes les photos",
 
     LibraryTopBar_emptyTrashQuestion: 'Vous êtes sûr de vouloir vider les corbeilles ?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Section précédente : {0}',
     PhotoDetailPane_nextSection: 'Section suivante : {0}',
     PhotoDetailPane_edit: 'Éditer',
+    PhotoDetailPane_fit: 'Adapter à la fenêtre',
+    PhotoDetailPane_zoom: 'Zoom',
 
     PhotoInfo_title: 'Info',
     PhotoInfo_showInFolder: 'Afficher la photo dans le dossier',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Étalonnage',
 
     PhotoColorGrading_title: 'Étalonnage',
+    PhotoColorGrading_save: 'Enregistrer',
+    PhotoColorGrading_saved: 'Enregistré',
+    PhotoColorGrading_saveFailed: 'Échec. Réessayez.',
+    PhotoColorGrading_saveHint: 'Les réglages sont enregistrés automatiquement.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: '3 voies',
     PhotoColorGrading_mode_shadows: 'Ombres',

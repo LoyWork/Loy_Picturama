@@ -1,19 +1,16 @@
 import React from 'react'
 import classnames from 'classnames'
-import { ResizeSensor, IResizeEntry, Spinner, NonIdealState, Classes, Button, Intent } from '@blueprintjs/core'
-import { FaRegCircle } from 'react-icons/fa'
+import { ResizeSensor, IResizeEntry, Spinner, NonIdealState, Classes } from '@blueprintjs/core'
 
 import { PhotoWork, PhotoSectionId, Photo, ColorGrading, DevelopSettings } from 'app/CommonTypes'
 import { msg } from 'app/i18n/i18n'
-import { addCommandGroup, Command, CommandGroupId, getCommandButtonProps, removeCommandGroup, setCommandGroupEnabled } from 'app/controller/HotkeyController'
 import { LibrarySelectionController } from 'app/controller/LibrarySelectionController'
 import { PhotoActionController } from 'app/controller/PhotoActionController'
-import { isPhotoSelected } from 'app/state/selectors'
 import { SelectionState } from 'app/state/StateTypes'
-import RedCheckCircle from 'app/ui/widget/icon/RedCheckCircle'
 import PhotoActionButtons from 'app/ui/widget/PhotoActionButtons'
+import RotateButtonGroup from 'app/ui/widget/RotateButtonGroup'
 import { showPhotoContextMenu } from 'app/ui/widget/PhotoContextMenu'
-import { CameraMetrics, CameraMetricsBuilder, RequestedPhotoPosition, PhotoPosition } from 'app/util/CameraMetrics'
+import { CameraMetrics, CameraMetricsBuilder, RequestedPhotoPosition } from 'app/util/CameraMetrics'
 import { HistogramData } from 'app/util/DevelopUtil'
 import { Size, zeroSize, Insets, zeroInsets, Rect } from 'app/util/GeometryTypes'
 import { bindMany, isShallowEqual } from 'app/util/LangUtil'
@@ -79,8 +76,6 @@ interface State {
     cameraMetrics: CameraMetrics | null
 }
 
-type CommandKeys = 'toggleSelected'
-
 export default class PhotoDetailBody extends React.Component<Props, State> {
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State): Partial<State> | null {
@@ -135,12 +130,9 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
         return nextState
     }
 
-    private commands: { [K in CommandKeys]: Command }
-    private commandGroupId: CommandGroupId = -1
-
     constructor(props: Props) {
         super(props)
-        bindMany(this, 'onLoadingStateChange', 'onResize', 'onTextureChange', 'onTogglePhotoSelected',
+        bindMany(this, 'onLoadingStateChange', 'onResize', 'onTextureChange',
             'setPhotoPosition', 'enterCropMode', 'onPhotoWorkEdited', 'onCropDone', 'onContextMenu')
         const cameraMetricsBuilder = new CameraMetricsBuilder()
         this.state = {
@@ -157,24 +149,6 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
             cameraMetrics: null,
         }
 
-        this.commands = {
-            toggleSelected: { combo: 'space', enabled: () => this.props.mode === 'view', label: msg('PhotoDetailBody_select'), onAction: this.onTogglePhotoSelected },
-        }
-    }
-
-    componentDidMount() {
-        this.commandGroupId = addCommandGroup(this.commands)
-    }
-
-    componentDidUpdate(prevProps: Props) {
-        const { props } = this
-        if (props.isActive !== prevProps.isActive) {
-            setCommandGroupEnabled(this.commandGroupId, props.isActive)
-        }
-    }
-
-    componentWillUnmount() {
-        removeCommandGroup(this.commandGroupId)
     }
 
     private onContextMenu(event: React.MouseEvent) {
@@ -204,13 +178,7 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
         }
     }
 
-    private onTogglePhotoSelected() {
-        const { props } = this
-        const isSelected = isPhotoSelected(props.sectionId, props.photo.id, props.selection)
-        props.librarySelectionController.setPhotoSelected(props.sectionId, props.photo.id, !isSelected)
-    }
-
-    private setPhotoPosition(photoPosition: PhotoPosition) {
+    private setPhotoPosition(photoPosition: RequestedPhotoPosition) {
         this.setState({ photoPosition })
     }
 
@@ -241,8 +209,7 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
     }
 
     render() {
-        const { props, state, commands } = this
-        const isSelected = isPhotoSelected(props.sectionId, props.photo.id, props.selection)
+        const { props, state } = this
         return (
             <div className={classnames(props.className, 'PhotoDetailBody')} onContextMenu={this.onContextMenu}>
                 <ResizeSensor onResize={this.onResize}>
@@ -268,27 +235,24 @@ export default class PhotoDetailBody extends React.Component<Props, State> {
                         bodyClassName={props.bodyClassName}
                         isTopBarRight={true}
                         topBarRightItem={
-                            <>
-                                <PhotoActionButtons
-                                    isActive={props.isActive}
-                                    selectedPhotos={props.photo}
-                                    isShowingTrash={!!props.photo.trashed}
-                                    isShowingInfo={props.isShowingInfo}
-                                    isShowingColorGrading={props.isShowingColorGrading}
-                                    showPanelButtons={false}
-                                    photoActionController={props.photoActionController}
-                                    toggleShowInfo={props.toggleShowInfo}
-                                    toggleShowGrading={props.toggleShowGrading}
-                                />
-                                <Button
-                                    className='PhotoDetailBody-toggleSelected'
-                                    intent={props.selection ? Intent.PRIMARY : Intent.NONE}
-                                    active={isSelected}
-                                    icon={isSelected ? <RedCheckCircle size={16}/> : <FaRegCircle style={{ fontSize: 16 }}/>}
-                                    text={msg(isSelected ? 'PhotoDetailBody_selected' : 'PhotoDetailBody_select')}
-                                    {...getCommandButtonProps(commands.toggleSelected)}
-                                />
-                            </>
+                            <RotateButtonGroup
+                                isActive={props.isActive}
+                                onRotate={turns => props.photoActionController.rotatePhotos(props.photo, turns)}
+                            />
+                        }
+                        bottomBarActions={
+                            <PhotoActionButtons
+                                isActive={props.isActive}
+                                selectedPhotos={props.photo}
+                                isShowingTrash={!!props.photo.trashed}
+                                isShowingInfo={props.isShowingInfo}
+                                isShowingColorGrading={props.isShowingColorGrading}
+                                showPanelButtons={false}
+                                showRotation={false}
+                                photoActionController={props.photoActionController}
+                                toggleShowInfo={props.toggleShowInfo}
+                                toggleShowGrading={props.toggleShowGrading}
+                            />
                         }
                         isActive={props.isActive}
                         isFirst={props.isFirst}

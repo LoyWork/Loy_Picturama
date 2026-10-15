@@ -1,7 +1,7 @@
 # Builds the Windows installer and attaches it to a GitHub Release draft.
 #
-# Triggered by pushing a `v*` tag. The version in the release name comes from
-# `src-tauri/tauri.conf.json` (keep it in sync with package.json). The release is created as a
+# Triggered by pushing a `v*` tag. The release uses that exact tag; keep its version in sync with
+# `src-tauri/tauri.conf.json`, Cargo.toml and package.json. The release is created as a
 # draft: check the attached installer on the Releases page, then press Publish.
 #
 # libheif is linked statically on Windows (see DEVELOP.md), so the installed application does not
@@ -60,8 +60,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: 'Picturama v__VERSION__'
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Picturama ${{ github.ref_name }}'
           releaseBody: 'See the assets to download and install this version.'
           releaseDraft: true
           prerelease: false

@@ -6,7 +6,7 @@ import { Size, zeroSize, Rect, zeroRect, Insets, zeroInsets } from 'app/util/Geo
 
 
 const globalMinZoom = 0.0000001
-export const maxZoom = 2
+export const maxZoom = 8
 
 export interface CameraMetrics {
     textureSize: Size
@@ -210,7 +210,7 @@ export class CameraMetricsBuilder {
         let photoPosition: PhotoPosition
         const minZoom = (boundsRect.width === 0 || boundsRect.height === 0 || insetsWidth >= canvasSize.width || insetsHeight >= canvasSize.height) ?
             globalMinZoom :
-            Math.min(maxZoom,
+            Math.min(2,
                 (canvasSize.width - insetsWidth / displayScaling) / boundsRect.width,
                 (canvasSize.height - insetsHeight / displayScaling) / boundsRect.height)
         if (requestedPhotoPosition === 'contain') {
@@ -231,8 +231,8 @@ export class CameraMetricsBuilder {
         } else {
             photoPosition = requestedPhotoPosition
             const zoom = photoPosition.zoom
-            if (zoom < minZoom || zoom > maxZoom) {
-                photoPosition = { ...photoPosition, zoom: Math.min(maxZoom, Math.max(minZoom, zoom)) }
+            if (!Number.isFinite(zoom) || zoom < globalMinZoom || zoom > maxZoom) {
+                photoPosition = { ...photoPosition, zoom: Number.isFinite(zoom) ? Math.min(maxZoom, Math.max(globalMinZoom, zoom)) : minZoom }
             }
         }
 

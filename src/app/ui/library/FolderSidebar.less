@@ -68,3 +68,22 @@
     font-size: 11px;
     color: @blue-grey-300;
 }
+.FolderSidebar-folderRow { padding-block: 0; padding-right: 10px; }
+.FolderSidebar-folderSelect,
+.FolderSidebar-expand {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    &:focus-visible { outline: 2px solid @teal-300; outline-offset: -2px; }
+}
+.FolderSidebar-folderSelect {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    flex: 1;
+    padding: 7px 0;
+    text-align: left;
+}
+.FolderSidebar-expand,
+.FolderSidebar-expandPlaceholder { flex: 0 0 18px; width: 18px; padding: 0; font-size: 9px; }

@@ -1,12 +1,13 @@
 import classnames from 'classnames'
 import React from 'react'
-import { Button, ButtonGroup, MaybeElement, Slider } from '@blueprintjs/core'
+import { Button, ButtonGroup, MaybeElement } from '@blueprintjs/core'
 import { FaArrowLeft, FaArrowRight, FaChevronLeft, FaCrop } from 'react-icons/fa'
 
 import { Command, getCommandButtonProps, CommandGroupId, addCommandGroup, setCommandGroupEnabled, removeCommandGroup } from 'app/controller/HotkeyController'
 import { msg } from 'app/i18n/i18n'
 import Toolbar from 'app/ui/widget/Toolbar'
-import { CameraMetrics, RequestedPhotoPosition, limitPhotoPosition } from 'app/util/CameraMetrics'
+import { CameraMetrics, RequestedPhotoPosition } from 'app/util/CameraMetrics'
+import { canZoomPhoto, getZoomSliderValue, getSliderPhotoPosition } from 'app/util/PhotoZoomUtil'
 import { bindMany } from 'app/util/LangUtil'
 
 import ViewModeOverlay from './ViewModeOverlay'
@@ -17,6 +18,7 @@ export interface Props {
     bodyClassName: string
     isTopBarRight: boolean
     topBarRightItem?: MaybeElement
+    bottomBarActions?: MaybeElement
     isActive: boolean
     isFirst: boolean
     isLast: boolean
@@ -43,12 +45,12 @@ export default class ViewModeLayer extends React.Component<Props> {
             close: { combo: 'esc', label: msg('common_backToLibrary'), onAction: props.closeDetail },
             prevPhoto: { combo: 'left', enabled: () => !this.props.isFirst, label: msg('PhotoDetailPane_prevPhoto'), onAction: props.setPreviousDetailPhoto },
             nextPhoto: { combo: 'right', enabled: () => !this.props.isLast, label: msg('PhotoDetailPane_nextPhoto'), onAction: props.setNextDetailPhoto },
-            edit: { combo: 'enter', label: msg('PhotoDetailPane_edit'), onAction: props.enterCropMode },
+            edit: { combo: 'enter', enabled: () => !!this.props.cameraMetrics, label: msg('PhotoDetailPane_edit'), onAction: props.enterCropMode },
         }
     }
 
     componentDidMount() {
-        this.commandGroupId = addCommandGroup(this.commands)
+        this.commandGroupId = addCommandGroup(this.commands, this.props.isActive)
     }
 
     componentDidUpdate(prevProps: Props) {
@@ -68,26 +70,19 @@ export default class ViewModeLayer extends React.Component<Props> {
             return
         }
 
-        const { minZoom, maxZoom } = cameraMetrics
-        const percentage = fromSliderScale(sliderScale)
-        const zoom = minZoom + percentage * (maxZoom - minZoom)
-
-        this.props.setPhotoPosition((zoom <= minZoom) ? 'contain' :
-            limitPhotoPosition(cameraMetrics, { ...cameraMetrics.photoPosition, zoom }, false))
+        this.props.setPhotoPosition(getSliderPhotoPosition(cameraMetrics, sliderScale))
     }
 
     render() {
         const { props, commands } = this
         const { cameraMetrics } = props
 
-        let zoomSliderValue = 0
-        let zoomSliderLabel: string | null = null
+        const zoomSliderValue = getZoomSliderValue(cameraMetrics)
+        const canZoom = canZoomPhoto(cameraMetrics)
+        let zoomSliderLabel = '—'
         if (cameraMetrics) {
             const zoom = cameraMetrics.photoPosition.zoom
-            zoomSliderValue = toSliderScale((zoom - cameraMetrics.minZoom) / (cameraMetrics.maxZoom - cameraMetrics.minZoom))
-            if (zoom > cameraMetrics.minZoom + 0.00001) {
-                zoomSliderLabel = `${Math.round(zoom * 100)}%`
-            }
+            zoomSliderLabel = `${Math.round(zoom / cameraMetrics.minZoom * 100)}%`
         }
 
         return (
@@ -111,23 +106,34 @@ export default class ViewModeLayer extends React.Component<Props> {
                         </Button>
                     </ButtonGroup>
                     <Toolbar.Spacer isTopBar/>
-                    <div className='PhotoDetailPane-zoomPane'>
-                        <Slider className='PhotoDetailPane-zoomSlider'
-                            disabled={cameraMetrics === null}
-                            value={zoomSliderValue}
-                            min={0}
-                            max={1}
-                            stepSize={0.000001}
-                            labelRenderer={false}
-                            showTrackFill={false}
-                            onChange={this.onZoomSliderChange}
-                        />
-                        <div className='PhotoDetailPane-zoomValue'>{zoomSliderLabel}</div>
-                    </div>
-                    <Button minimal={true} {...getCommandButtonProps(commands.edit)}>
-                        <FaCrop/>
-                    </Button>
                     {props.topBarRightItem}
+                </Toolbar>
+                <Toolbar className='PhotoDetailPane-bottomBar' isTopBar={false}>
+                    <div className='PhotoDetailPane-zoomPane'>
+                        <Button minimal icon='zoom-out' aria-label='−' disabled={!canZoom || zoomSliderValue === 0}
+                            onClick={() => this.onZoomSliderChange(Math.max(0, zoomSliderValue - 0.1))}/>
+                        <input type='range' className='PhotoDetailPane-zoomSlider'
+                            aria-label={msg('PhotoDetailPane_zoom')}
+                            disabled={!canZoom}
+                            value={Math.round(zoomSliderValue * 100)}
+                            min={0}
+                            max={100}
+                            step={1}
+                            onChange={event => this.onZoomSliderChange(Number(event.currentTarget.value) / 100)}
+                        />
+                        <Button minimal icon='zoom-in' aria-label='+' disabled={!canZoom || zoomSliderValue === 1}
+                            onClick={() => this.onZoomSliderChange(Math.min(1, zoomSliderValue + 0.1))}/>
+                        <Button minimal className='PhotoDetailPane-zoomValue' disabled={!cameraMetrics}
+                            title={msg('PhotoDetailPane_fit')} aria-label={msg('PhotoDetailPane_fit')}
+                            onClick={() => props.setPhotoPosition('contain')}>{zoomSliderLabel}</Button>
+                    </div>
+                    <div className='PhotoDetailPane-photoActions'>
+                        <Button minimal={true} aria-label={commands.edit.label} {...getCommandButtonProps(commands.edit)}>
+                            <FaCrop/>
+                            <span className='PhotoDetailPane-editLabel'>{msg('PhotoDetailPane_edit')}</span>
+                        </Button>
+                        {props.bottomBarActions}
+                    </div>
                 </Toolbar>
                 <ViewModeOverlay
                     className={classnames(props.bodyClassName, 'ViewModeLayer-body')}
@@ -138,17 +144,4 @@ export default class ViewModeLayer extends React.Component<Props> {
         )
     }
 
-}
-
-
-function toSliderScale(percentage: number): number {
-    const sliderScale = Math.max(0, Math.min(1, Math.sqrt(percentage)))
-
-    // Workaround: For very small values (e.g. `6e-16`) the Slider widget shows no track bar
-    // -> Pull small values to 0
-    return sliderScale < 0.000001 ? 0 : sliderScale
-}
-
-function fromSliderScale(sliderScale: number): number {
-    return sliderScale * sliderScale
 }

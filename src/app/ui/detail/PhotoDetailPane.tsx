@@ -11,7 +11,7 @@ import { setDetailPhotoByIndex, setPreviousDetailPhoto, setNextDetailPhoto } fro
 import { defaultLibrarySelectionController, LibrarySelectionController } from 'app/controller/LibrarySelectionController'
 import { defaultPhotoActionController, PhotoActionController } from 'app/controller/PhotoActionController'
 import { setPhotoTags } from 'app/controller/PhotoTagController'
-import { updatePhotoWorkColorGrading, updatePhotoWorkDevelop } from 'app/controller/PhotoGradingController'
+import { updatePhotoWorkColorGrading, updatePhotoWorkDevelop, savePhotoGrading } from 'app/controller/PhotoGradingController'
 import { setShowGradingAction, setShowInfoAction } from 'app/state/actions'
 import { getPhotoById, getPhotoByIndex, getLoadedSectionById, getTagTitles, getInfoPhoto } from 'app/state/selectors'
 import { AppState, InfoPhotoData, SelectionState } from 'app/state/StateTypes'
@@ -231,6 +231,7 @@ export class PhotoDetailPane extends React.Component<Props, State> {
                     closeGrading={this.toggleShowGrading}
                     onColorGradingChange={this.onColorGradingChange}
                     onDevelopChange={this.onDevelopChange}
+                    onSave={() => savePhotoGrading(props.photo)}
                 />
                 <PhotoToolsToolbar
                     showInfo={props.showInfo}

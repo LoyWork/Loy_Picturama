@@ -2,7 +2,7 @@ import { mat4 } from 'gl-matrix'
 
 import CancelablePromise from 'app/util/CancelablePromise'
 import { ColorGrading, DevelopSettings, MixerBand, MIXER_BANDS } from 'app/CommonTypes'
-import { zeroPoint, Size, Rect } from 'app/util/GeometryTypes'
+import { Size, Rect } from 'app/util/GeometryTypes'
 import { transformRect } from 'app/util/GeometryUtil'
 import Profiler from 'app/util/Profiler'
 import { isNeutral, oklchHueOfSrgbHue, wheelChromaStrength, wheelLumStrength, withDefaults } from 'app/util/ColorGradingUtil'
@@ -166,14 +166,6 @@ export default class PhotoCanvas {
 
         // ===== Calculate =====
 
-        let viewportOrigin = zeroPoint
-        let viewportSize = size
-        if (clipRect) {
-            const viewportRect = transformRect(clipRect, this.cameraMatrix)
-            viewportOrigin = viewportRect
-            viewportSize = viewportRect
-        }
-
         // Important for matrix: Build it backwards (first operation last)
         const matrix = mat4.create()
         // Move origin to the center (0 .. 2) to clipspace coordinates (-1/1 .. 1/-1)
@@ -181,10 +173,7 @@ export default class PhotoCanvas {
         // Scale to clipspace units (0 .. viewportWidth/viewportWidth) -> (0/2 .. 2/0)
         //   - 2 because clipspace coordinates are (-1 .. 1)
         //   - flip y, because clipspace's y axis goes from bottom to top
-        mat4.scale(matrix, matrix, [ 2 / viewportSize.width, -2 / viewportSize.height, 1 ])
-        if (clipRect) {
-            mat4.translate(matrix, matrix, [ -viewportOrigin.x, -viewportOrigin.y, 0 ])
-        }
+        mat4.scale(matrix, matrix, [ 2 / size.width, -2 / size.height, 1 ])
         // Apply camera
         mat4.multiply(matrix, matrix, this.cameraMatrix)
         // Apply projection
@@ -201,15 +190,20 @@ export default class PhotoCanvas {
         // Clear the canvas before we start drawing on it.
         // TODO: Make clear color configurable
         gl.viewport(0, 0, size.width, size.height)
+        gl.disable(gl.SCISSOR_TEST)
         gl.clearColor(0.0, 0.0, 0.0, 1.0)
         gl.clear(gl.COLOR_BUFFER_BIT)
 
         if (clipRect) {
-            // Screen coordinates (as defined in `doc/geometry-concept.md`) go from top to bottom,
-            // but Web GL measures the viewport from bottom to top
-            // -> Translate y (it's the bottom of the rect measured from the bottom of the canvas)
-            const glViewportY = size.height - viewportOrigin.y - viewportSize.height
-            gl.viewport(viewportOrigin.x, glViewportY, viewportSize.width, viewportSize.height)
+            // Clip within the canvas instead of enlarging the WebGL viewport with the zoomed
+            // photo. Large photos can exceed the GPU's viewport limit when zoomed in.
+            const rect = transformRect(clipRect, this.cameraMatrix)
+            const left = Math.max(0, Math.min(size.width, Math.floor(rect.x)))
+            const top = Math.max(0, Math.min(size.height, Math.floor(rect.y)))
+            const right = Math.max(left, Math.min(size.width, Math.ceil(rect.x + rect.width)))
+            const bottom = Math.max(top, Math.min(size.height, Math.ceil(rect.y + rect.height)))
+            gl.enable(gl.SCISSOR_TEST)
+            gl.scissor(left, size.height - bottom, right - left, bottom - top)
         }
 
         const grading = this.colorGrading
@@ -315,6 +309,8 @@ export default class PhotoCanvas {
                 .draw()
         }
 
+        // The histogram renders the entire photo into its own framebuffer.
+        gl.disable(gl.SCISSOR_TEST)
         this.updateHistogram()
 
         return this

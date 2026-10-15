@@ -6,6 +6,7 @@
 /licenses.json.gz
 /*.patch
 picturama.yml
+*.picturama.yml
 
 npm-debug.log
 .DS_Store

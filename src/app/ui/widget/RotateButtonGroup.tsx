@@ -62,10 +62,10 @@ export default class RotateButtonGroup extends React.Component<Props> {
         const { props, commands } = this
         return (
             <ButtonGroup className={classnames(props.className, 'RotateButtonGroup')}>
-                <Button minimal {...getCommandButtonProps(commands.rotateLeft)}>
+                <Button minimal aria-label={commands.rotateLeft.label} {...getCommandButtonProps(commands.rotateLeft)}>
                     <MdRotateLeft className={SVG_ICON_CLASS}/>
                 </Button>
-                <Button minimal {...getCommandButtonProps(commands.rotateRight)}>
+                <Button minimal aria-label={commands.rotateRight.label} {...getCommandButtonProps(commands.rotateRight)}>
                     <MdRotateRight className={SVG_ICON_CLASS}/>
                 </Button>
             </ButtonGroup>

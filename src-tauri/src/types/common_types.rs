@@ -186,6 +186,8 @@ pub struct PhotoWork {
     pub tilt: Option<f64>,
     pub crop_rect: Option<crate::types::geometry_types::Rect>,
     pub color_grading: Option<ColorGrading>,
+    /// Preserve all develop controls across IPC and sidecar reloads.
+    pub develop: Option<serde_json::Value>,
     pub flagged: Option<bool>,
     pub tags: Option<Vec<String>>,
 }
@@ -213,12 +215,14 @@ pub struct PhotoSet {
     pub photo_data: HashMap<PhotoId, Photo>,
 }
 
-/// One top-level folder inside a photo root directory, for the folder sidebar: the folder's display
-/// name (the first path segment) and the number of non-trashed photos in it (including subfolders).
+/// An image-bearing directory or ancestor, identified by its full path.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PhotoFolder {
     pub name: String,
+    pub path: String,
+    pub parent_path: Option<String>,
+    pub depth: usize,
     pub count: u32,
 }
 

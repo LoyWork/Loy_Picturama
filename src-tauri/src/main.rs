@@ -65,6 +65,7 @@ fn main() {
             commands::fs::file_exists,
             commands::fs::get_file_size,
             commands::fs::show_item_in_folder,
+            commands::fs::open_photo_directory,
             // Directory selection
             commands::fs::select_scan_directories,
             commands::fs::select_export_directory,

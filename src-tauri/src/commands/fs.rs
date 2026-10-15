@@ -57,6 +57,22 @@ pub async fn show_item_in_folder(full_path: String) -> Result<(), String> {
     Ok(())
 }
 
+/// Open the chosen directory itself, rather than selecting it in its parent.
+#[tauri::command]
+pub async fn open_photo_directory(directory: String, user_dirs: State<'_, UserDirs>) -> Result<(), String> {
+    if !user_dirs.is_inside_photo_dir(&directory) || !Path::new(&directory).is_dir() {
+        return Err("Not an available photo directory".into());
+    }
+    #[cfg(target_os = "windows")]
+    std::process::Command::new("explorer.exe").arg(directory.replace('/', "\\"))
+        .spawn().map_err(|e| e.to_string())?;
+    #[cfg(target_os = "macos")]
+    std::process::Command::new("open").arg(&directory).spawn().map_err(|e| e.to_string())?;
+    #[cfg(target_os = "linux")]
+    std::process::Command::new("xdg-open").arg(&directory).spawn().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
 /// Opens a native folder picker and returns the selected directories. Returns None when the user cancels.
 #[tauri::command]
 pub async fn select_scan_directories(app: AppHandle, user_dirs: State<'_, UserDirs>)

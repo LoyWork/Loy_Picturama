@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'С тегом:',
 
     FolderSidebar_title: "Папки",
+    FolderSidebar_resize: 'Измените ширину перетаскиванием; двойной щелчок сбрасывает',
+    FolderSidebar_openInExplorer: 'Открыть в Проводнике Windows',
     FolderSidebar_all: "Все фото",
 
     LibraryTopBar_emptyTrashQuestion: 'Вы уверены что хотите очистить корзину?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Предыдущий раздел: {0}',
     PhotoDetailPane_nextSection: 'Следующий раздел: {0}',
     PhotoDetailPane_edit: 'Редактировать',
+    PhotoDetailPane_fit: 'По размеру окна',
+    PhotoDetailPane_zoom: 'Масштаб',
 
     PhotoInfo_title: 'Данные',
     PhotoInfo_showInFolder: 'Показать фото в папке',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Цветокоррекция',
 
     PhotoColorGrading_title: 'Цветокоррекция',
+    PhotoColorGrading_save: 'Сохранить изменения',
+    PhotoColorGrading_saved: 'Сохранено',
+    PhotoColorGrading_saveFailed: 'Не удалось сохранить. Повторите попытку.',
+    PhotoColorGrading_saveHint: 'Изменения сохраняются автоматически.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: 'Трёхканальная',
     PhotoColorGrading_mode_shadows: 'Тени',

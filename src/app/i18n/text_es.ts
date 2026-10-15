@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'Con etiqueta:',
 
     FolderSidebar_title: "Carpetas",
+    FolderSidebar_resize: 'Arrastra para ajustar, doble clic para restablecer',
+    FolderSidebar_openInExplorer: 'Abrir en el Explorador de Windows',
     FolderSidebar_all: "Todas las fotos",
 
     LibraryTopBar_emptyTrashQuestion: '¿Estás seguro de que quieres vaciar la papelera?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Sección anterior: {0}',
     PhotoDetailPane_nextSection: 'Sección siguiente: {0}',
     PhotoDetailPane_edit: 'Editar',
+    PhotoDetailPane_fit: 'Ajustar a la ventana',
+    PhotoDetailPane_zoom: 'Zoom',
 
     PhotoInfo_title: 'Info',
     PhotoInfo_showInFolder: 'Mostrar foto en carpeta',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Etalonaje',
 
     PhotoColorGrading_title: 'Etalonaje',
+    PhotoColorGrading_save: 'Guardar ajustes',
+    PhotoColorGrading_saved: 'Guardado',
+    PhotoColorGrading_saveFailed: 'Error al guardar. Reinténtalo.',
+    PhotoColorGrading_saveHint: 'Los ajustes se guardan automáticamente.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: '3 vías',
     PhotoColorGrading_mode_shadows: 'Sombras',

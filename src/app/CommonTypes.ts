@@ -293,9 +293,12 @@ export type PhotoFilter =
     // TODO: Revive Legacy code of 'version' feature
     // -> Add 'processed'
 
-/** One top-level folder inside a photo root directory, for the folder sidebar. */
+/** An image-bearing directory or ancestor. Full paths keep same-name folders distinct. */
 export interface PhotoFolder {
     name: string
+    path?: string
+    parentPath?: string | null
+    depth?: number
     count: number
 }
 

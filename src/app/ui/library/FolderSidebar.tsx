@@ -1,13 +1,13 @@
 import classNames from 'classnames'
 import React from 'react'
 import { connect } from 'react-redux'
-import { IconName } from '@blueprintjs/core'
-import { FaStar, FaRegStar, FaTrashAlt, FaImages, FaTag } from 'react-icons/fa'
+import { FaRegStar, FaTrashAlt, FaImages, FaTag, FaFolder, FaChevronRight, FaChevronDown } from 'react-icons/fa'
 
-import { TagId, TagById } from 'app/CommonTypes'
+import { TagId, TagById, PhotoFolder } from 'app/CommonTypes'
 import { msg } from 'app/i18n/i18n'
 import { setLibraryFilter } from 'app/controller/PhotoController'
 import { AppState } from 'app/state/StateTypes'
+import { showFolderContextMenu } from 'app/ui/widget/FolderContextMenu'
 
 import './FolderSidebar.less'
 
@@ -35,7 +35,7 @@ interface OwnProps {
 
 interface StateProps {
     folderIds: string[]
-    folderById: { [name: string]: { name: string, count: number } }
+    folderById: { [name: string]: PhotoFolder }
     libraryFilter: AppState['library']['filter']
     tagIds: TagId[]
     tagById: TagById
@@ -53,7 +53,53 @@ export interface Props extends OwnProps, StateProps, DispatchProps {
  * favorites / trash, formerly the filter button's menu), the tags and the top-level folders inside
  * the photo directories.
  */
-export class FolderSidebar extends React.Component<Props> {
+export class FolderSidebar extends React.Component<Props, { collapsed: Set<string> }> {
+
+    state = { collapsed: new Set<string>() }
+
+    private renderFolderTree(): JSX.Element[] {
+        const { folderIds, folderById, libraryFilter } = this.props
+        const children = new Map<string | null, string[]>()
+        for (const id of folderIds) {
+            const folder = folderById[id]
+            if (!folder || folder.count <= 0) continue
+            const parent = folder.parentPath && folderById[folder.parentPath] ? folder.parentPath : null
+            children.set(parent, [...(children.get(parent) || []), id])
+        }
+        const renderBranch = (parent: string | null, depth: number): JSX.Element[] =>
+            (children.get(parent) || []).flatMap(id => {
+                const folder = folderById[id]
+                const hasChildren = !!children.get(id)?.length
+                const expanded = !this.state.collapsed.has(id)
+                return [
+                    <div key={id} className={classNames('FolderSidebar-item FolderSidebar-folderRow', {
+                        isSelected: libraryFilter.filterType === 'folder' && libraryFilter.folder === id,
+                    })} style={{ paddingLeft: 8 + depth * 14 }}
+                        onContextMenu={event => {
+                            if (folder.path) showFolderContextMenu(folder.path, event)
+                            else event.preventDefault()
+                        }}>
+                        {hasChildren ? <button className='FolderSidebar-expand' aria-expanded={expanded}
+                            aria-label={folder.name} onClick={() => this.setState(state => {
+                                const collapsed = new Set(state.collapsed)
+                                if (collapsed.has(id)) collapsed.delete(id)
+                                else collapsed.add(id)
+                                return { collapsed }
+                            })}>{expanded ? <FaChevronDown/> : <FaChevronRight/>}</button> :
+                            <span className='FolderSidebar-expandPlaceholder'/>}
+                        <button className='FolderSidebar-folderSelect' title={folder.path || folder.name}
+                            aria-current={libraryFilter.filterType === 'folder' && libraryFilter.folder === id ? 'true' : undefined}
+                            onClick={() => this.onSelectFolder(id)}>
+                            <span className='FolderSidebar-itemIcon'><FaFolder/></span>
+                            <span className='FolderSidebar-itemName'>{folder.name}</span>
+                            <span className='FolderSidebar-itemCount'>{folder.count}</span>
+                        </button>
+                    </div>,
+                    ...(hasChildren && expanded ? renderBranch(id, depth + 1) : []),
+                ]
+            })
+        return renderBranch(null, 0)
+    }
 
     private onSelectSimple(filterType: SimpleFilterType) {
         this.props.setLibraryFilter({ filterType })
@@ -117,7 +163,7 @@ export class FolderSidebar extends React.Component<Props> {
         ]
 
         return (
-            <div className={classNames(props.className, 'FolderSidebar')}>
+            <div className={classNames(props.className, 'FolderSidebar')} onContextMenu={event => event.preventDefault()}>
                 <div className='FolderSidebar-body'>
                     {this.renderEntries(photoEntries)}
                     {!!props.tagIds.length &&
@@ -138,17 +184,7 @@ export class FolderSidebar extends React.Component<Props> {
                     {!!props.folderIds.length &&
                         <>
                             {this.renderSectionTitle(msg('FolderSidebar_title'))}
-                            {this.renderEntries(props.folderIds.map(folder => {
-                                const folderData = props.folderById[folder]
-                                return {
-                                    key: `folder-${folder}`,
-                                    icon: <FaImages/>,
-                                    label: folder,
-                                    count: folderData ? folderData.count : undefined,
-                                    isSelected: libraryFilter.filterType === 'folder' && libraryFilter.folder === folder,
-                                    onSelect: () => this.onSelectFolder(folder),
-                                }
-                            }))}
+                            {this.renderFolderTree()}
                         </>
                     }
                 </div>

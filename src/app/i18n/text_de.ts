@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'Mit Schlagwort:',
 
     FolderSidebar_title: "Ordner",
+    FolderSidebar_resize: 'Ziehen zum Anpassen, Doppelklick zum Zurücksetzen',
+    FolderSidebar_openInExplorer: 'Im Windows-Explorer öffnen',
     FolderSidebar_all: "Alle Fotos",
 
     LibraryTopBar_emptyTrashQuestion: 'Möchtest Du den Papierkorb leeren?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Vorheriger Abschnitt: {0}',
     PhotoDetailPane_nextSection: 'Nächster Abschnitt: {0}',
     PhotoDetailPane_edit: 'Bearbeiten',
+    PhotoDetailPane_fit: 'An Fenster anpassen',
+    PhotoDetailPane_zoom: 'Zoom',
 
     PhotoInfo_title: 'Info',
     PhotoInfo_showInFolder: 'Foto in Ordner anzeigen',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Farbkorrektur',
 
     PhotoColorGrading_title: 'Farbkorrektur',
+    PhotoColorGrading_save: 'Anpassungen speichern',
+    PhotoColorGrading_saved: 'Gespeichert',
+    PhotoColorGrading_saveFailed: 'Speichern fehlgeschlagen. Erneut versuchen.',
+    PhotoColorGrading_saveHint: 'Änderungen werden automatisch gespeichert.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: '3-Wege',
     PhotoColorGrading_mode_shadows: 'Tiefschatten',

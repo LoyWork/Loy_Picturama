@@ -29,6 +29,7 @@ import PhotoToolsToolbar from 'app/ui/widget/PhotoToolsToolbar'
 import LibraryTopBar from './LibraryTopBar'
 import LibraryBottomBar from './LibraryBottomBar'
 import FolderSidebar from './FolderSidebar'
+import FolderSidebarResizer from './FolderSidebarResizer'
 import Grid from './Grid'
 
 import './Library.less'
@@ -177,6 +178,7 @@ export class Library extends React.Component<Props> {
                 style={props.style}
             >
                 <FolderSidebar className="Library-folderSidebar"/>
+                <FolderSidebarResizer showInfo={props.showInfo}/>
                 <LibraryTopBar
                     className="Library-topBar"
                     isActive={props.isActive}

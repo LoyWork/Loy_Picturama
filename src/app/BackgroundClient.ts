@@ -91,6 +91,10 @@ const BackgroundClient = {
         return invokeCommand('showItemInFolder', { fullPath })
     },
 
+    openPhotoDirectory(directory: string): Promise<void> {
+        return invokeCommand('openPhotoDirectory', { directory })
+    },
+
     readMetadataOfImage(imagePath: string): Promise<MetaData> {
         return invokeCommand('readMetadataOfImage', { imagePath })
     },

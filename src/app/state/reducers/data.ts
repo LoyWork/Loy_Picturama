@@ -68,8 +68,9 @@ const folders = (state: FoldersState = initialFoldersState, action: Action): Fol
             let ids: string[] = []
             let byId: { [name: string]: PhotoFolder } = {}
             for (const folder of action.payload.folders) {
-                ids.push(folder.name)
-                byId[folder.name] = folder
+                const id = folder.path || folder.name
+                ids.push(id)
+                byId[id] = folder
             }
             return { ids, byId }
         }

@@ -65,21 +65,23 @@ export function onPhotosTrashed(result: EmptyTrashResult) {
 
 
 // We queue pending PhotoWork updates, so we don't get lost updates if multiple updates wait for fetching to finish
-const pendingUpdates: { photo: Photo, updates: ((photoWork: PhotoWork) => void)[] }[] = []
+const pendingUpdates: { [path: string]: { photo: Photo, updates: ((photoWork: PhotoWork) => void)[], completion: Promise<boolean> } } = {}
 
 export function updatePhotoWork(photo: Photo, update: (photoWork: PhotoWork) => void, thumbnailNeedsUpdateOverride?: boolean) {
     const photoPath = getMasterPath(photo)
     let pendingUpdate = pendingUpdates[photoPath]
     if (pendingUpdate) {
         pendingUpdate.updates.push(update)
+        return pendingUpdate.completion
     } else {
         pendingUpdate = {
             photo,
-            updates: [ update ]
+            updates: [ update ],
+            completion: Promise.resolve(false)
         }
         pendingUpdates[photoPath] = pendingUpdate
 
-        BackgroundClient.fetchPhotoWorkOfPhoto(photo)
+        pendingUpdate.completion = BackgroundClient.fetchPhotoWorkOfPhoto(photo)
             .then(photoWork => {
                 const photoWorkBefore = { ...photoWork }
                 for (const up of pendingUpdate.updates) {
@@ -106,10 +108,13 @@ export function updatePhotoWork(photo: Photo, update: (photoWork: PhotoWork) => 
                     thumbnailNeedsUpdate ? onThumbnailChange(photo.id) : Promise.resolve()
                 ])
             })
+            .then(() => true)
             .catch(error => {
-                delete pendingUpdates[photoPath]
+                if (pendingUpdates[photoPath] === pendingUpdate) delete pendingUpdates[photoPath]
                 showError('Updating photo work failed: ' + photoPath, error)
+                return false
             })
+        return pendingUpdate.completion
     }
 }
 

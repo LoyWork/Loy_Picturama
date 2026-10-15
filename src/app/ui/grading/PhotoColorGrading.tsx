@@ -72,6 +72,7 @@ export interface Props {
     /** The live histogram of the rendered photo */
     histogram?: HistogramData | null
     closeGrading: () => void
+    onSave?: () => Promise<boolean>
     /**
      * Called for every change (also during drags): the parent shows it live and saves it
      * (debounced on its side for wheel gestures — sliders only commit on release).
@@ -82,6 +83,7 @@ export interface Props {
 }
 
 interface State {
+    saveState: 'idle' | 'saving' | 'saved' | 'error'
     mode: GradingMode
     /** Which sections are open (LightCraft's `section_open`) */
     openSections: { [id in SectionId]?: boolean }
@@ -112,12 +114,33 @@ export default class PhotoColorGrading extends React.Component<Props, State> {
         bindMany(this, 'onClose', 'onReset', 'onAuto', 'onBw', 'toggleSection', 'toggleSectionEnabled',
             'onWbModeSelect', 'onWbMenuToggle')
         this.state = {
+            saveState: 'idle',
             mode: '3way',
             openSections: { light: true, color: true },
             disabledSections: {},
             hiddenWheels: { shadows: false, midtones: false, highlights: false, global: false },
             mixerBand: 'red',
             wbMenuOpen: false,
+        }
+    }
+
+    componentDidUpdate(prevProps: Props) {
+        if (prevProps.photo?.id !== this.props.photo?.id) {
+            this.setState({ saveState: 'idle' })
+        } else if (this.state.saveState === 'saved' &&
+            (prevProps.develop !== this.props.develop || prevProps.colorGrading !== this.props.colorGrading)) {
+            this.setState({ saveState: 'idle' })
+        }
+    }
+
+    private async onSave() {
+        const photoId = this.props.photo?.id
+        this.setState({ saveState: 'saving' })
+        try {
+            const saved = await this.props.onSave?.()
+            if (photoId === this.props.photo?.id) this.setState({ saveState: saved ? 'saved' : 'error' })
+        } catch {
+            if (photoId === this.props.photo?.id) this.setState({ saveState: 'error' })
         }
     }
 
@@ -275,6 +298,15 @@ export default class PhotoColorGrading extends React.Component<Props, State> {
                 <div className='PhotoColorGrading-body'>
                     {body}
                 </div>
+                {props.isActive && props.photo && props.onSave &&
+                    <div className='PhotoColorGrading-footer'>
+                        <span role='status'>{msg(this.state.saveState === 'error' ? 'PhotoColorGrading_saveFailed' : 'PhotoColorGrading_saveHint')}</span>
+                        <Button icon={this.state.saveState === 'saved' ? 'tick' : 'floppy-disk'} intent='primary'
+                            loading={this.state.saveState === 'saving'} onClick={() => this.onSave()}>
+                            {msg(this.state.saveState === 'saved' ? 'PhotoColorGrading_saved' : 'PhotoColorGrading_save')}
+                        </Button>
+                    </div>
+                }
             </div>
         )
     }

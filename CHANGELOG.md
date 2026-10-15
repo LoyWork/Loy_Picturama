@@ -1,6 +1,19 @@
 Changelog
 =========
 
+v2.0.1 - 2026-10-15
+-------------------
+
+  - Move zoom, crop, favorites and trash controls below the photo; keep rotations in the top bar.
+  - Replace the zoom slider with a native control spanning 25% to 400% of the fitted image size.
+  - Fix zoom rendering for large images and allow small images to zoom beyond the previous 200% limit.
+  - Add a save button with completion and retry feedback to the color adjustment panel.
+  - Persist exposure, white balance and all other develop settings in per-image `.picturama.yml` sidecars.
+    Unedited images create no sidecar, and resetting all edits removes the sidecar. Read legacy directory settings.
+  - Show every image-bearing folder and its ancestors in an expandable tree, with full-path filtering.
+  - Add a folder context menu containing only the command to open that directory in Windows Explorer.
+  - Make the folder sidebar resizable, remember its width, and support double-click to restore the default.
+
 
 v1.3.0 - 2020-09-27
 -------------------

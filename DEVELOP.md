@@ -170,7 +170,9 @@ guarantee, not an implementation detail.
   - **Database** — `db.sqlite3`. Migrations are compatible with `sqlite3-helper` (same `migrations` table,
     same `-- Down` split convention).
   - **Settings** — `settings.json`
-  - **PhotoWork (non-destructive edits)** — `picturama.yml` sidecar per photo directory.
+  - **PhotoWork (non-destructive edits)** — `<original filename>.picturama.yml` beside each edited image.
+    Browsing or saving neutral adjustments creates no sidecar; resetting removes that image's sidecar.
+    Legacy directory-level `picturama.yml` / `ansel.json` files are still read and migrated per edited image.
   - **Thumbnails** — `thumbnails/<shortId>.webp`, plus `thumbnails/<shortId>.failed` for a photo whose render killed
     the web view (see "Image rendering" above)
 

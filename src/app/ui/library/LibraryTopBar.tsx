@@ -86,6 +86,7 @@ export default class LibraryTopBar extends React.Component<Props, State> {
                     isShowingInfo={props.isShowingInfo}
                     isShowingColorGrading={false}
                     showPanelButtons={false}
+                    rotationsOnly
                     photoActionController={props.photoActionController}
                     toggleShowInfo={props.toggleShowInfo}
                     toggleShowGrading={props.toggleShowGrading}

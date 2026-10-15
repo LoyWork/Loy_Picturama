@@ -90,6 +90,8 @@ export default {
     LibraryFilterButton_tag_title: 'With tag:',
 
     FolderSidebar_title: 'Folders',
+    FolderSidebar_resize: 'Drag to resize folders; double-click to reset',
+    FolderSidebar_openInExplorer: 'Open in Windows Explorer',
     FolderSidebar_all: 'All photos',
 
     LibraryTopBar_emptyTrashQuestion: 'Are you sure you want to empty the trash?',
@@ -149,6 +151,8 @@ export default {
     PhotoDetailPane_prevSection: 'Previous section: {0}',
     PhotoDetailPane_nextSection: 'Next section: {0}',
     PhotoDetailPane_edit: 'Edit',
+    PhotoDetailPane_fit: 'Fit to window',
+    PhotoDetailPane_zoom: 'Zoom',
 
     PhotoInfo_title: 'Info',
     PhotoInfo_showInFolder: 'Show photo in folder',
@@ -171,6 +175,10 @@ export default {
     PhotoActionButtons_colorGrading: 'Color grading',
 
     PhotoColorGrading_title: 'Color grading',
+    PhotoColorGrading_save: 'Save adjustments',
+    PhotoColorGrading_saved: 'Saved',
+    PhotoColorGrading_saveFailed: 'Save failed. Try again.',
+    PhotoColorGrading_saveHint: 'Edits save automatically. Save to confirm.',
     PhotoColorGrading_mode_global: 'Global',
     PhotoColorGrading_mode_3way: '3-Way',
     PhotoColorGrading_mode_shadows: 'Shadows',

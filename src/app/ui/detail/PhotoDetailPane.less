@@ -4,8 +4,11 @@
 
 .PhotoDetailPane {
     position: relative;
+    container-type: inline-size;
+    --detail-controls-height: 64px;
 }
-.PhotoDetailPane-body {
+.PhotoDetailPane-body,
+.PhotoDetailPane-bottomBar {
     position: absolute;
     left: 0;
     right: @photoToolsWidth;
@@ -32,31 +35,98 @@
     }
 }
 .PhotoDetailPane-zoomPane {
-    position: relative;
-    display: inline-block;
-    margin: 0 8px;
-    width: 50px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     min-width: 0;
-    vertical-align: middle;
+    flex: 0 1 360px;
 }
 .PhotoDetailPane-zoomSlider {
-    min-width: 0 !important;
+    flex: 1 1 180px;
+    width: 180px;
+    min-width: 100px;
+    height: 36px;
+    margin: 0;
+    accent-color: @teal-300;
+    cursor: pointer;
+    &:disabled { opacity: 0.4; cursor: default; }
 }
 .PhotoDetailPane-zoomValue {
-    // Use `position: absolute` in order to take no height
-    position: absolute;
-    left: 0;
-    bottom: -10px;
-    width: 100%;
-
-    text-align: center;
-    color: @blue-grey-300;
-    font-size: 9px;
-    line-height: 9px;
+    min-width: 56px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: @blue-grey-100;
 }
 .PhotoDetailPane-body {
     top: @toolbarHeight;
+    bottom: var(--detail-controls-height);
+}
+.PhotoDetailPane-bottomBar.Toolbar {
+    position: absolute;
     bottom: 0;
+    height: var(--detail-controls-height);
+    display: flex;
+    gap: 20px;
+    padding: 12px 20px;
+    border-top: 1px solid @glassBorder;
+    border-bottom: 0;
+    background: rgba(34, 42, 48, 0.88);
+    box-shadow: none;
+
+    .bp3-button {
+        flex: 0 0 auto;
+        min-width: 36px;
+        height: 36px;
+        border-radius: 6px;
+        margin: 0;
+    }
+    .bp3-button:focus-visible,
+    .PhotoDetailPane-zoomSlider:focus-visible {
+        outline: 2px solid @teal-300;
+        outline-offset: 2px;
+    }
+    .bp3-button.bp3-active { color: @teal-300; }
+    .bp3-button[title]:hover { background-color: @glassHighlight; }
+    .bp3-button .bp3-icon-trash { color: @blue-grey-300; }
+    .bp3-button:hover .bp3-icon-trash { color: #ff9292; }
+}
+.PhotoDetailPane-photoActions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-left: 20px;
+    border-left: 1px solid @glassBorder;
+}
+
+// Stack by the available photo width, including when two sidebars are open.
+@container (max-width: 1100px) {
+    .PhotoDetailPane-bottomBar.Toolbar {
+        gap: 12px;
+        padding-inline: 12px;
+    }
+    .PhotoDetailPane-photoActions { padding-left: 12px; }
+}
+.compactDetailControls() {
+    .PhotoDetailPane-body { bottom: 108px; }
+    .PhotoDetailPane-bottomBar.Toolbar {
+        height: 108px;
+        flex-wrap: wrap;
+        align-content: center;
+        gap: 4px 12px;
+    }
+    .PhotoDetailPane-zoomPane { flex: 1 0 100%; }
+    .PhotoDetailPane-zoomSlider { width: auto; }
+    .PhotoDetailPane-photoActions { padding-left: 0; border: 0; }
+}
+@container (max-width: 960px) {
+    .compactDetailControls();
+}
+@container (max-width: 1260px) {
+    .PhotoDetailPane.hasRightSidebar,
+    .PhotoDetailPane.hasGradingSidebar { .compactDetailControls(); }
+}
+@container (max-width: 1560px) {
+    .PhotoDetailPane.hasGradingSidebar.hasRightSidebar { .compactDetailControls(); }
 }
 .PhotoDetailPane-rightSidebar {
     position: absolute;
