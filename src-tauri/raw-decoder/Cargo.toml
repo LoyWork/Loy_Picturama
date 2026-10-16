@@ -1,0 +1,18 @@
+[package]
+name = "picturama-raw"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+lightcraft-raw = { path = "../vendor/lightcraft/crates/raw" }
+lightcraft-color = { path = "../vendor/lightcraft/crates/color" }
+lightcraft-raster = { path = "../vendor/lightcraft/crates/raster" }
+lightcraft-meta = { path = "../vendor/lightcraft/crates/meta" }
+image = { version = "0.25", default-features = false, features = ["jpeg"] }
+jxl-oxide = { version = "0.12", default-features = false }
+kamadak-exif = "0.6"
+log = "0.4"
+
+[dev-dependencies]
+lightcraft-tiff = { path = "../vendor/lightcraft/crates/tiff" }

@@ -99,6 +99,7 @@ fn main() {
             commands::image::load_heif_file,
             // RAW
             commands::image::extract_raw_preview_jpg,
+            commands::image::load_raw_file,
             // Tags
             commands::tags::fetch_tags,
             commands::tags::store_photo_tags,

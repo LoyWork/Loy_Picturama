@@ -76,10 +76,13 @@ export default class WebGLCanvas {
         let textureFormat: number
         let width: number
         let height: number
-        if (isHeicFile(filePath)) {
-            // HEIC is decoded natively in Rust (libheif) and returned as interleaved RGB8.
-            const imageData = await BackgroundClient.loadHeifFile(filePath)
-            if (profiler) profiler.addPoint('Loaded heic image')
+        if (isHeicFile(filePath) || isRawFile(filePath)) {
+            // Native readers return oriented, tightly packed sRGB8. This path is also used by
+            // thumbnails and exports, so they use the same sensor image or preview fallback.
+            const imageData = isRawFile(filePath)
+                ? await BackgroundClient.loadRawFile(filePath)
+                : await BackgroundClient.loadHeifFile(filePath)
+            if (profiler) profiler.addPoint('Loaded native image')
             textureSource = imageData.data
             textureFormat = gl.RGB
             width = imageData.width
@@ -93,24 +96,14 @@ export default class WebGLCanvas {
             // protocol sends the matching CORS headers, so an anonymous request loads it untainted.
             image.crossOrigin = 'anonymous'
 
-            // RAW images can't be shown directly. Rust backend extracts the largest embedded JPEG preview and we
-            // decode it with the browser like any other JPEG (via a blob URL). For all other formats the
-            // image file is loaded straight from disk.
-            const isRaw = isRawFile(filePath)
-            const src = isRaw
-                ? URL.createObjectURL(new Blob([await BackgroundClient.extractRawPreviewJpg(filePath)], { type: 'image/jpeg' }))
-                : convertFileSrc(filePath)
-            try {
-                await new Promise((resolve, reject) => {
-                    image.onload = resolve
-                    image.onerror = errorEvt => {
-                        reject(new Error(`Loading image failed: ${filePath}`))
-                    }
-                    image.src = src
-                })
-            } finally {
-                if (isRaw) URL.revokeObjectURL(src)
-            }
+            const src = convertFileSrc(filePath)
+            await new Promise((resolve, reject) => {
+                image.onload = resolve
+                image.onerror = errorEvt => {
+                    reject(new Error(`Loading image failed: ${filePath}`))
+                }
+                image.src = src
+            })
             if (profiler) profiler.addPoint('Loaded image')
 
             // Never hand the `<img>` itself to texImage2D: WebKit pulls the pixels out of the CGImage in

@@ -238,3 +238,29 @@ fn split_migration<'a>(filename: &str, sql: &'a str) -> Result<(&'a str, String)
         filename
     ))
 }
+
+#[cfg(test)]
+mod raw_migration_tests {
+    use super::*;
+
+    #[test]
+    fn raw_migration_preserves_existing_geometry_and_edits() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch("CREATE TABLE photos (id INTEGER PRIMARY KEY, master_dir TEXT, master_filename TEXT,
+            master_width INTEGER, master_height INTEGER);
+            INSERT INTO photos VALUES (1, 'D:/photos', 'old.cr2', 2496, 1664);").unwrap();
+        let (up, down) = split_migration("005", include_str!("../../../migrations/005-raw-sensor-render.sql")).unwrap();
+        conn.execute_batch(up).unwrap();
+        conn.execute_batch("INSERT INTO photos VALUES (2, 'D:/photos', 'new.nef', 6000, 4000, 1)").unwrap();
+        let db = Arc::new(Mutex::new(conn));
+        assert!(crate::store::photo_store::raw_uses_legacy_preview(&db, "D:\\photos\\old.cr2").unwrap());
+        assert!(!crate::store::photo_store::raw_uses_legacy_preview(&db, "D:/photos/new.nef").unwrap());
+        assert!(!crate::store::photo_store::raw_uses_legacy_preview(&db, "D:/photos/unimported.nef").unwrap());
+        let conn = db.lock().unwrap();
+        let size: (u32, u32) = conn.query_row("SELECT master_width, master_height FROM photos WHERE id = 1",
+            [], |r| Ok((r.get(0)?, r.get(1)?))).unwrap();
+        assert_eq!(size, (2496, 1664));
+        conn.execute_batch(&down).unwrap();
+        assert_eq!(conn.query_row("SELECT count(*) FROM photos", [], |r| r.get::<_, u32>(0)).unwrap(), 2);
+    }
+}

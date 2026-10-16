@@ -18,7 +18,7 @@ Everything from the original Picturama:
 - Scan local files - Keep your privacy, don't upload your personal photos to a cloud service
 - Non-Destructive - The original images won't be touched (unless you purge the trash)
 - Read various photo formats: JPG, PNG, WebP, HEIC / HEIF, TIF (macOS only)
-- Read raw formats: RAF (Fujifilm), CR2 (Canon), ARW (Sony), DNG — shown through the JPEG preview the camera embedded
+- Read camera RAW through the vendored LightCraft engine: NEF/NRW, CR2/CR3, ARW, RAF, DNG, RW2, PEF, ORF and SRW, with embedded-preview fallback for unsupported variants. [Coverage and limitations](doc/raw-support.md).
 - Browse photos by dates
 - View photo in detail (zoomable)
 - View EXIF information

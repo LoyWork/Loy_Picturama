@@ -1,0 +1,12 @@
+LightCraft RAW
+Copyright (c) 2026 ArtCraft Team and the LightCraft contributors.
+Licensed under MIT OR Apache-2.0; see LICENSE-MIT and LICENSE-APACHE.
+
+src/spectral_table.rs contains camera matrices fitted by the LightCraft contributors from
+rawtoaces-data v1.1.0 (Academy Software Foundation, Apache-2.0), commit
+5cfa53707b053594b2d0d48e8019fb56e6582d6c, and the CIE 1931 colour-matching functions
+it ships (CIE, CC-BY-4.0, https://creativecommons.org/licenses/by/4.0/).
+Source: https://github.com/AcademySoftwareFoundation/rawtoaces-data
+Camera sensitivities were measured by Weta Digital, scitech, and Jonathon Irons at the National
+Physical Laboratory. The fitted matrices are derived data; aliases were copied from data/aliases.json.
+Full upstream attribution is retained in ../../ATTRIBUTION.md in the vendored tree.

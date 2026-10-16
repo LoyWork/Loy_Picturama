@@ -108,7 +108,7 @@ export interface UiConfig {
     thumbnailPath: string
     /** The extensions the renderer has load via `BackgroundClient.loadHeifFile`. See `DataUtil.isHeicFile` */
     acceptedHeicExtensions: string[]
-    /** The extensions the renderer has load via `BackgroundClient.extractRawPreviewJpg`. See `DataUtil.isRawFile` */
+    /** Extensions decoded through `BackgroundClient.loadRawFile`. See `DataUtil.isRawFile` */
     acceptedRawExtensions: string[]
 }
 

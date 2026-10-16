@@ -1,7 +1,7 @@
-// RAW embedded-preview reader.
+// Legacy RAW embedded-preview reader, retained for the original extraction API.
 //
-// Picturama is an organizer, not a RAW developer: instead of demosaicing the sensor mosaic, it uses the
-// camera-developed JPEG preview that every RAW file embeds. Extracting it is a cheap byte-slice (no
+// New imports and display use picturama-raw's sensor decoder. This reader extracts the
+// camera-developed JPEG preview. Extracting it is a cheap byte-slice (no
 // decode) — the browser then decodes the JPEG like any other, and the same preview backs display, the
 // thumbnail render and export.
 //

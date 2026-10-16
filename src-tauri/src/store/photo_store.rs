@@ -11,6 +11,16 @@ pub fn fetch_total_photo_count(db: &DbHandle) -> Result<u32, String> {
         .map_err(|e| e.to_string())
 }
 
+/// Existing library records keep the preview geometry their saved edits were made against.
+pub fn raw_uses_legacy_preview(db: &DbHandle, path: &str) -> Result<bool, String> {
+    let normalized = path.replace('\\', "/");
+    let conn = db.lock().map_err(|_| "Photo database is unavailable")?;
+    conn.query_row(
+        "SELECT EXISTS(SELECT 1 FROM photos WHERE master_dir || '/' || master_filename = ?1 AND raw_sensor_render = 0)",
+        [&normalized], |row| row.get(0),
+    ).map_err(|e| e.to_string())
+}
+
 /// Every non-trashed master file currently in the library. Duplicate detection deliberately works
 /// from these database-owned paths instead of accepting arbitrary filesystem paths from the web view.
 pub fn fetch_active_photo_paths(db: &DbHandle) -> Result<Vec<String>, String> {
@@ -449,14 +459,13 @@ pub fn insert_photos_batch(db: &DbHandle, items: &[(NewPhoto, Vec<String>)]) -> 
         let mut added = 0u32;
         let mut tags_changed = false;
         for (photo, tags) in items {
-            // The `master_is_raw` column still exists in the DB schema (kept, with `DEFAULT '0'`, so no
-            // migration is needed) but is no longer used by the code: RAW is displayed on demand from its
-            // embedded JPEG preview. We omit it from the INSERT and let the default apply.
+            // New imports use the sensor decoder. Migration 005 keeps existing RAW photos on their
+            // embedded previews so saved pixel crop coordinates and thumbnails stay compatible.
             conn.execute(
                 "INSERT INTO photos (\
                    master_dir, master_filename, master_width, master_height, \
-                   edited_width, edited_height, date_section, created_at, updated_at, imported_at, flag, trashed\
-                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 0)",
+                   edited_width, edited_height, date_section, created_at, updated_at, imported_at, flag, trashed, raw_sensor_render\
+                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 0, 1)",
                 rusqlite::params![
                     photo.master_dir,
                     photo.master_filename,

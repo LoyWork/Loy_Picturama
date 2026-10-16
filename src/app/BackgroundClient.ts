@@ -1,4 +1,4 @@
-import { invoke } from '@tauri-apps/api/core'
+import { invoke, InvokeArgs } from '@tauri-apps/api/core'
 
 import {
     DecodedHeifImage,
@@ -28,7 +28,7 @@ import {
 const toSnakeCase = (s: string): string =>
     s.replace(/[A-Z]/g, (c) => `_${c.toLowerCase()}`)
 
-async function invokeCommand<T>(action: string, payload?: unknown): Promise<T> {
+async function invokeCommand<T>(action: string, payload?: InvokeArgs): Promise<T> {
     let result: T
     try {
         result = await invoke(toSnakeCase(action), payload ?? {})
@@ -127,6 +127,17 @@ const BackgroundClient = {
 
     extractRawPreviewJpg(path: string): Promise<ArrayBuffer> {
         return invokeCommand<ArrayBuffer>('extractRawPreviewJpg', { path })
+    },
+
+    async loadRawFile(path: string): Promise<DecodedHeifImage> {
+        const buf = await invokeCommand<ArrayBuffer>('loadRawFile', { path })
+        const header = new DataView(buf)
+        const width = header.getUint32(0, true)
+        const height = header.getUint32(4, true)
+        if (!width || !height || buf.byteLength !== 8 + width * height * 3) {
+            throw new Error('Invalid RAW image response')
+        }
+        return { width, height, data: new Uint8Array(buf, 8) }
     },
 
     selectScanDirectories(): Promise<string[] | undefined> {

@@ -3,6 +3,11 @@ name = "picturama"
 version = "2.0.1"
 edition = "2021"
 
+[workspace]
+members = [".", "raw-decoder"]
+default-members = ["."]
+resolver = "3"
+
 [[bin]]
 name = "Picturama"
 path = "src/main.rs"
@@ -26,6 +31,8 @@ img-parts          = "0.4"
 # Cheap image-dimension probe: reads only the file header to get width/height without decoding pixels.
 # Feeds the import dimension chain (JPEG/HEIC/RAW-preview sizing) in import_scanner.rs.
 imagesize          = "0.13"
+# Vendored standalone LightCraft RAW decoder and colour science (MIT OR Apache-2.0).
+picturama-raw     = { path = "raw-decoder" }
 # Insertion-order-preserving map. Used directly so the per-segment EXIF dump keeps natural EXIF field
 # order for the info panel's "first 10 keys" fallback.
 indexmap           = { version = "2", features = ["serde"] }
@@ -78,5 +85,52 @@ trash              = "3"
 codegen-units = 1
 lto = true
 opt-level = "s"
-panic = "abort"
+panic = "unwind"
 strip = true
+
+[profile.dev.package.lightcraft-raw]
+opt-level = 2
+
+[profile.dev.package.lightcraft-raster]
+opt-level = 2
+
+[profile.dev.package.lightcraft-color]
+opt-level = 2
+
+[workspace.package]
+version = "0.7.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.90"
+
+[workspace.dependencies]
+lightcraft-raw = { path = "vendor/lightcraft/crates/raw" }
+lightcraft-tiff = { path = "vendor/lightcraft/crates/tiff" }
+lightcraft-meta = { path = "vendor/lightcraft/crates/meta" }
+lightcraft-color = { path = "vendor/lightcraft/crates/color" }
+lightcraft-geom = { path = "vendor/lightcraft/crates/geom" }
+lightcraft-raster = { path = "vendor/lightcraft/crates/raster" }
+serde = { version = "1", features = ["derive", "rc"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+thiserror = "2"
+rayon = "1"
+miniz_oxide = "0.8"
+quick-xml = "0.38"
+zune-jpeg = { version = "0.5", default-features = false, features = ["std", "x86", "neon"] }
+zune-core = { version = "0.5", default-features = false, features = ["std"] }
+jxl-oxide = { version = "0.12", default-features = false }
+jpeg-encoder = { version = "0.7", default-features = false, features = ["std"] }
+zune-jpegxl = { version = "0.5", default-features = false, features = ["std"] }
+proptest = "1"
+libc = "0.2"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+too_many_arguments = "allow"
+needless_range_loop = "allow"
+type_complexity = "allow"
+excessive_precision = "allow"

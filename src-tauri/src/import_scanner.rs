@@ -16,7 +16,6 @@ use tauri::{AppHandle, Manager};
 use crate::types::common_types::{ImportPhase, ImportProgress, PhotoId};
 use crate::image::exif_reader;
 use crate::foreground_client;
-use crate::image::raw_reader;
 use crate::store::db::DbHandle;
 use crate::store::{photo_store, photo_work_store};
 use crate::store::photo_store::NewPhoto;
@@ -27,9 +26,9 @@ use crate::store::photo_store::NewPhoto;
 
 // The extensions Picturama imports — the single source, here because the scanner is what decides
 // whether a file is accepted at all. The two special cases are `pub(crate)` because the renderer needs
-// them too: it hands HEIC to libheif and RAW to the embedded-preview reader, everything else to the web
-// view. They reach it in the `UiConfig` (`commands::lifecycle::fetch_ui_config`), so a new extension is
-// added here and nowhere else. `ACCEPTED_NON_RAW` stays private: the frontend never filters by
+// them too: it hands HEIC to libheif and RAW to the LightCraft decoder, everything else to the web
+// view. They reach it in the `UiConfig` (`commands::lifecycle::fetch_ui_config`); RAW extensions are
+// owned by picturama-raw. `ACCEPTED_NON_RAW` stays private: the frontend never filters by
 // "importable", the plain path is simply the `else` branch.
 //
 // TIFF is the one platform-dependent entry: plain files are decoded by the web view, and only the one
@@ -41,7 +40,7 @@ const ACCEPTED_NON_RAW: &[&str] = &["png", "jpg", "jpeg", "webp", "tif", "tiff"]
 #[cfg(not(target_os = "macos"))]
 const ACCEPTED_NON_RAW: &[&str] = &["png", "jpg", "jpeg", "webp"];
 pub(crate) const ACCEPTED_HEIC: &[&str] = &["heic", "heif"];
-pub(crate) const ACCEPTED_RAW: &[&str] = &["raf", "cr2", "arw", "dng"];
+pub(crate) const ACCEPTED_RAW: &[&str] = picturama_raw::EXTENSIONS;
 
 /// Number of photos accumulated before a batch is written in one transaction (one fsync per batch
 /// instead of one per photo). Deliberately independent of directory size.
@@ -565,18 +564,15 @@ fn build_new_photo(
     //   the browser rotates the file on display.
     // - HEIF: `imagesize` reads the container's `ispe` + `irot`, so it already returns the oriented size
     //   (matching libheif's decode, which bakes the rotation into the pixels) — so it is NOT swapped.
-    // - RAW: shown via its embedded JPEG preview (see `raw_reader`), so the size comes from that preview.
-    //   Like a normal JPEG the preview is un-rotated, and the browser applies the preview's *own* EXIF
-    //   orientation — so it is swapped by that orientation, not the RAW container's.
+    // - RAW: dimensions from the same sensor decoder / preview fallback as display, already oriented.
     let is_heic = is_heic_ext(filename);
     let is_raw = is_raw_ext(filename);
 
-    // For RAW, extract the embedded preview once and use it for both the size and the orientation.
-    let raw_jpeg = if is_raw {
-        match raw_reader::extract_embedded_jpeg(&full_path) {
-            Ok(jpeg) => Some(jpeg),
+    let raw_image = if is_raw {
+        match picturama_raw::decode_file(&full_path, false) {
+            Ok(image) => Some(image),
             Err(e) => {
-                log::warn!("Could not extract RAW preview from {}: {}", full_path, e);
+                log::warn!("Could not decode RAW {}: {}", full_path, e);
                 None
             }
         }
@@ -584,22 +580,14 @@ fn build_new_photo(
         None
     };
 
-    let switch_sides = if is_heic {
+    let switch_sides = if is_heic || is_raw {
         false
-    } else if is_raw {
-        raw_jpeg
-            .as_ref()
-            .map(|jpeg| exif_reader::has_exif_orientation_switched_sides(exif_reader::read_orientation_of_bytes(jpeg)))
-            .unwrap_or(false)
     } else {
         exif_reader::has_exif_orientation_switched_sides(meta_data.orientation)
     };
 
     let raw_size = if is_raw {
-        raw_jpeg
-            .as_ref()
-            .and_then(|jpeg| imagesize::blob_size(jpeg).ok())
-            .map(|s| (s.width as u32, s.height as u32))
+        raw_image.as_ref().map(|image| (image.width, image.height))
     } else if is_heic {
         imagesize::size(&full_path).ok().map(|s| (s.width as u32, s.height as u32))
     } else {
@@ -806,20 +794,17 @@ mod tests {
     }
 
     #[test]
-    fn imports_raw_using_embedded_preview_dimensions() {
-        // RAW is imported like a normal photo: its master dimensions come from the largest embedded JPEG
-        // preview (which also backs display/export).
+    fn imports_raw_using_sensor_dimensions() {
+        // Full sensor decoding gives 4368x2912; the camera preview is only 2496x1664.
         let (photo, _tags) = build_new_photo(&raw_corpus_dir(), "raw_Canon_5D_ARGB.cr2", 333)
             .unwrap()
             .expect("RAW should be importable");
-        assert_eq!((photo.master_width, photo.master_height), (2496, 1664));
+        assert_eq!((photo.master_width, photo.master_height), (4368, 2912));
     }
 
     #[test]
     fn imports_rotated_raw_with_swapped_dimensions() {
-        // The iPhone 12 Pro ProRAW DNG is a portrait shot: its embedded preview is encoded 4032x3024
-        // (landscape) with EXIF orientation 6, which the browser rotates to portrait on display. The
-        // stored master dimensions must match that display orientation, so they are swapped to 3024x4032.
+        // The decoder applies the iPhone DNG's orientation 6 exactly once, returning portrait pixels.
         let (photo, _tags) = build_new_photo(&raw_corpus_dir(), "raw_Apple_iPhone_12_Pro.dng", 444)
             .unwrap()
             .expect("RAW should be importable");
