@@ -1,5 +1,6 @@
 import React from 'react'
 import { Button, Classes } from '@blueprintjs/core'
+import { FiInfo, FiSliders } from 'react-icons/fi'
 
 
 import { addCommandGroup, Command, CommandGroupId, formatCommandLabel, getCommandButtonProps, removeCommandGroup, setCommandGroupEnabled } from 'app/controller/HotkeyController'
@@ -13,6 +14,7 @@ import { getCollectionSize } from 'app/util/PhotoCollectionResolver'
 import { formatNumber } from 'app/util/TextUtil'
 
 import RotateButtonGroup from './RotateButtonGroup'
+import './PhotoControl.less'
 
 
 type CommandKeys = 'toggleFlagged' | 'moveToTrash' | 'toggleInfo' | 'toggleGrading'
@@ -192,16 +194,22 @@ export default class PhotoActionButtons extends React.Component<Props> {
                     }
                     {props.showPanelButtons !== false && props.showGradingButton !== false &&
                         <Button
+                            className='PhotoControl'
                             minimal
-                            icon='tint'
+                            icon={<FiSliders aria-hidden='true'/>}
                             active={props.isShowingColorGrading}
+                            aria-pressed={props.isShowingColorGrading}
+                            aria-label={commands.toggleGrading.label}
                             {...getCommandButtonProps(commands.toggleGrading)}
                         />
                     }
                     {props.showPanelButtons !== false && <Button
+                        className='PhotoControl'
                         minimal
-                        icon='info-sign'
+                        icon={<FiInfo aria-hidden='true'/>}
                         active={props.isShowingInfo}
+                        aria-pressed={props.isShowingInfo}
+                        aria-label={commands.toggleInfo.label}
                         {...getCommandButtonProps(commands.toggleInfo)}
                     />}
                 </>}

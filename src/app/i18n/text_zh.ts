@@ -1,7 +1,7 @@
 export default {
 
     common_cancel: '取消',
-    common_backToLibrary: '返回图片馆',
+    common_backToLibrary: '返回',
     common_ratio: '{0}的{1}',
     common_hideReport: '隐藏报告',
     common_showReport: '显示报告',

@@ -104,13 +104,13 @@
 // background, not against the wallpaper — in ALL views (all photos, favorites, trash, tags, folders
 // alike), also when a view is EMPTY (empty favorites/trash show the wallpaper otherwise).
 .Library.hasGrid .Library-body {
-    background: linear-gradient(180deg, #22282d 0%, @gridBg 40%, #191c1f 100%);
+    background: @photoSurfaceBg;
 }
 
 // Empty views (no photos in the library or in the current filter): same opaque dark surface,
 // so no view ever shows the wallpaper behind the content area.
 .Library:not(.hasGrid) .Library-body {
-    background: linear-gradient(180deg, #22282d 0%, @gridBg 40%, #191c1f 100%);
+    background: @photoSurfaceBg;
 }
 
 .Library-grid {

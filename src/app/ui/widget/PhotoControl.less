@@ -1,0 +1,48 @@
+@import "../../style/variables.less";
+
+// Shared monochrome controls for photo navigation and the side tool rail.
+.PhotoControl.bp3-button.bp3-minimal,
+.bp3-dark .PhotoControl.bp3-button.bp3-minimal {
+    color: @photoControlMuted;
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    box-shadow: none;
+    font-weight: 400;
+    transition: color 120ms ease-out, background-color 120ms ease-out;
+
+    svg {
+        width: 18px;
+        height: 18px;
+        flex: 0 0 18px;
+        stroke-width: 1.6;
+    }
+
+    &:hover:not(:disabled) {
+        color: @photoControlMuted;
+        background: rgba(255, 255, 255, 0.06);
+        box-shadow: none;
+    }
+    &.bp3-active,
+    &.bp3-active:hover:not(:disabled),
+    &:active:not(:disabled) {
+        color: @white;
+        background: rgba(255, 255, 255, 0.10);
+        box-shadow: none;
+    }
+    &:focus-visible {
+        outline: 1px solid rgba(255, 255, 255, 0.7) !important;
+        outline-offset: -2px;
+    }
+    &:disabled,
+    &.bp3-disabled {
+        color: fade(@photoControlMuted, 35%);
+        background: transparent;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .PhotoControl.bp3-button { transition: none; }
+}

@@ -61,6 +61,7 @@ export default class Grid extends React.Component<Props, State> {
     private gridLayout: GridLayout | null = null
     private nailedGridPosition: NailedGridPosition | null = null
     private releaseNailTimer: NodeJS.Timer | null = null
+    private scrollFrame: number | null = null
 
 
     constructor(props: Props) {
@@ -118,6 +119,7 @@ export default class Grid extends React.Component<Props, State> {
             || nextProps.selection !== prevProps.selection
             || nextProps.preselectionRange !== prevProps.preselectionRange
             || nextState.scrollTop !== prevState.scrollTop
+            || nextState.viewportHeight !== prevState.viewportHeight
     }
 
     componentDidUpdate(prevProps: Props, prevState: State) {
@@ -143,6 +145,8 @@ export default class Grid extends React.Component<Props, State> {
 
     componentWillUnmount() {
         removeCommandGroup(this.commandGroupId)
+        if (this.scrollFrame !== null) window.cancelAnimationFrame(this.scrollFrame)
+        if (this.releaseNailTimer) clearTimeout(this.releaseNailTimer)
     }
 
     private getGridLayout(props: Props, state: State): GridLayout {
@@ -177,8 +181,12 @@ export default class Grid extends React.Component<Props, State> {
     }
 
     private onScroll(event: any) {
-        const scrollPaneElem = findDOMNode(this.refs.scrollPane) as HTMLElement
-        this.setState({ scrollTop: scrollPaneElem.scrollTop })
+        if (this.scrollFrame !== null) return
+        this.scrollFrame = window.requestAnimationFrame(() => {
+            this.scrollFrame = null
+            const scrollPaneElem = findDOMNode(this.refs.scrollPane) as HTMLElement
+            this.setState({ scrollTop: scrollPaneElem.scrollTop })
+        })
     }
 
     private setScrollTop(scrollTop: number) {

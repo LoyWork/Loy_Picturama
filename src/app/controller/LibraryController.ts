@@ -12,6 +12,7 @@ import CancelablePromise, { isCancelError } from 'app/util/CancelablePromise'
 import { getMasterPath } from 'app/util/DataUtil'
 import Profiler from 'app/util/Profiler'
 import SerialJobQueue from 'app/util/SerialJobQueue'
+import VerticalRangeIndex from 'app/util/VerticalRangeIndex'
 
 import { getThumbnailSrc } from './PhotoController'
 import { collectionContainsSection } from 'app/util/PhotoCollectionResolver'
@@ -51,6 +52,8 @@ export interface PhotoGridPosition {
 
 const pagesToKeep = 4
 const pagesToPreload = 3
+// Keep data ahead of scrolling without decoding seven screens of images at once.
+const pagesToRender = 0.5
 const averageAspect = 3 / 2
 const containerPadding = 10
 export const boxSpacing = 4
@@ -61,9 +64,14 @@ let prevSectionIds: PhotoSectionId[] = []
 let prevSectionById: PhotoSectionById = {}
 let prevGridLayout: GridLayout = { fromSectionIndex: 0, toSectionIndex: 0, sectionLayouts: [] }
 let prevScrollTop = 0
+let prevScrollingDown = true
 let prevViewportWidth = 0
 let prevViewportHeight = 0
 let prevGridRowHeight = -1
+
+let sectionRangeIndex = new VerticalRangeIndex([])
+const boxRangeIndices = new WeakMap<JustifiedLayoutBox[], VerticalRangeIndex>()
+let loadedSectionIds: PhotoSectionId[] = []
 
 let isFetchingSectionPhotos = false
 
@@ -82,8 +90,6 @@ export function getGridLayoutWithoutStoreUpdate(sectionIds: PhotoSectionId[], se
     const profiler = profileLibraryLayout ? new Profiler(`Calculating layout for ${sectionIds.length} sections`) : null
 
     let sectionsChanged = false
-    let fromSectionIndex: number | null = null
-    let toSectionIndex: number | null = null
     const prevGridLayoutIsDirty = (viewportWidth !== prevViewportWidth) || (gridRowHeight !== prevGridRowHeight)
 
     // Step 1: Section-internal layout (layout photos inside each section):
@@ -93,183 +99,152 @@ export function getGridLayoutWithoutStoreUpdate(sectionIds: PhotoSectionId[], se
     //   - Define `boxes` for loaded sections
 
     const sectionCount = sectionIds.length
-    const sectionLayouts: GridSectionLayout[] = []
-    for (let sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-        const sectionId = sectionIds[sectionIndex]
-        const section = sectionById[sectionId]
+    const geometryChanged = prevGridLayoutIsDirty || sectionIds !== prevSectionIds || sectionById !== prevSectionById
+    const sectionLayouts: GridSectionLayout[] = geometryChanged ? [] : prevGridLayout.sectionLayouts
+    if (geometryChanged) {
+        for (let sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+            const sectionId = sectionIds[sectionIndex]
+            const section = sectionById[sectionId]
 
-        const usePlaceholder = !isLoadedPhotoSection(section)
-        const prevLayout = (sectionId === prevSectionIds[sectionIndex]) ? prevGridLayout.sectionLayouts[sectionIndex] : null
-        const prevLayoutIsDirty = prevGridLayoutIsDirty ||
-            (!usePlaceholder && section !== prevSectionById[prevSectionIds[sectionIndex]])
-                // We have to compare sections, not section IDs in order to detect changes inside the section.
-                // See `createLayoutForLoadedSection`
+            const usePlaceholder = !isLoadedPhotoSection(section)
+            const prevLayout = (sectionId === prevSectionIds[sectionIndex]) ? prevGridLayout.sectionLayouts[sectionIndex] : null
+            const prevLayoutIsDirty = prevGridLayoutIsDirty ||
+                (!usePlaceholder && section !== prevSectionById[prevSectionIds[sectionIndex]])
+                    // We have to compare sections, not section IDs in order to detect changes inside the section.
+                    // See `createLayoutForLoadedSection`
 
-        let layout: GridSectionLayout | null = null
-        if (prevLayout && !prevLayoutIsDirty) {
-            const prevLayoutIsPlaceholder = !prevLayout.boxes
-            if (usePlaceholder == prevLayoutIsPlaceholder) {
-                layout = prevLayout
+            let layout: GridSectionLayout | null = null
+            if (prevLayout && !prevLayoutIsDirty) {
+                const prevLayoutIsPlaceholder = !prevLayout.boxes
+                if (usePlaceholder == prevLayoutIsPlaceholder) {
+                    layout = prevLayout
+                }
             }
-        }
 
-        if (!layout) {
-            sectionsChanged = true
-            // We have to update the layout
-            if (usePlaceholder) {
-                if (prevLayout && !prevLayoutIsDirty) {
-                    // Section data was dropped -> Drop layout boxes as well
-                    layout = {
-                        left: 0,
-                        top: 0,
-                        width: prevLayout.width,
-                        height: prevLayout.height
+            if (!layout) {
+                sectionsChanged = true
+                // We have to update the layout
+                if (usePlaceholder) {
+                    if (prevLayout && !prevLayoutIsDirty) {
+                        // Section data was dropped -> Drop layout boxes as well
+                        layout = {
+                            left: 0,
+                            top: 0,
+                            width: prevLayout.width,
+                            height: prevLayout.height
+                        }
+                    } else {
+                        layout = estimateSectionLayout(section.count, viewportWidth, gridRowHeight)
                     }
                 } else {
-                    layout = estimateSectionLayout(section.count, viewportWidth, gridRowHeight)
+                    // Calculate boxes
+                    layout = createLayoutForLoadedSection(section as LoadedPhotoSection, viewportWidth, gridRowHeight)
                 }
-            } else {
-                // Calculate boxes
-                layout = createLayoutForLoadedSection(section as LoadedPhotoSection, viewportWidth, gridRowHeight)
             }
+
+            sectionLayouts.push(layout)
         }
 
-        sectionLayouts.push(layout)
-    }
-
-    if (profiler) {
-        profiler.addPoint('Section-internal layout')
-    }
-
-    // Step 2: Inter-section layout:
-    //
-    //   - Define `left` and `top`
-    //   - Do block-align for small sections shown in one row. This may scale those sections, so their
-    //     `width` and `height` change
-
-    let x = 0
-    let y = 0
-    let rowStartSectionIndex = 0
-    for (let sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-        const layout = sectionLayouts[sectionIndex]
-        const originalLayout = layout.originalLayout || layout
-
-        if (x != 0 && viewportWidth > 0 && x + originalLayout.width > viewportWidth) {
-            // This section goes into a new row
-
-            // Layout the row before
-            const hasChange = layoutSectionRow(y, rowStartSectionIndex, sectionIndex - 1, sectionLayouts, viewportWidth)
-            if (hasChange) {
-                sectionsChanged = true
-            }
-
-            // Start a new row
-            const prevLayout = sectionLayouts[sectionIndex - 1]
-            x = 0
-            y += prevLayout.height
-            rowStartSectionIndex = sectionIndex
+        if (profiler) {
+            profiler.addPoint('Section-internal layout')
         }
 
-        // Prepare next iteration
-        x += originalLayout.width + sectionSpacingX
-    }
+        // Step 2: Inter-section layout:
+        //
+        //   - Define `left` and `top`
+        //   - Do block-align for small sections shown in one row. This may scale those sections, so their
+        //     `width` and `height` change
 
-    // Layout the last row
-    const hasChange = layoutSectionRow(y, rowStartSectionIndex, sectionCount - 1, sectionLayouts, viewportWidth)
-    if (hasChange) {
-        sectionsChanged = true
-    }
+        let x = 0
+        let y = 0
+        let rowStartSectionIndex = 0
+        for (let sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
+            const layout = sectionLayouts[sectionIndex]
+            const originalLayout = layout.originalLayout || layout
 
-    if (profiler) {
-        profiler.addPoint('Inter-section layout')
-    }
+            if (x != 0 && viewportWidth > 0 && x + originalLayout.width > viewportWidth) {
+                // This section goes into a new row
 
-    // Step 3: Mark visible parts of sections:
-    //
-    //   - Define `fromBoxIndex` and `toBoxIndex`
-
-    let inDomMinY: number | null = null
-    let inDomMaxY: number | null = null
-    if (nailedGridPosition === null) {
-        inDomMinY = scrollTop - pagesToPreload * viewportHeight
-        inDomMaxY = scrollTop + (pagesToPreload + 1) * viewportHeight
-    }
-
-    for (let sectionIndex = 0; sectionIndex < sectionCount; sectionIndex++) {
-        const sectionId = sectionIds[sectionIndex]
-        const layout = sectionLayouts[sectionIndex]
-
-        const sectionBottom = layout.top + layout.height
-        if (inDomMinY === null || inDomMaxY === null) {
-            // We have a NailedGridPosition
-            // -> Just keep the previous `fromBoxIndex` and `toBoxIndex`
-            const prevLayout = (sectionId === prevSectionIds[sectionIndex]) ? prevGridLayout.sectionLayouts[sectionIndex] : null
-            if (layout.boxes && prevLayout && prevLayout.boxes && layout.boxes.length === prevLayout.boxes.length) {
-                layout.fromBoxIndex = prevLayout.fromBoxIndex
-                layout.toBoxIndex = prevLayout.toBoxIndex
-            }
-        } else {
-            // We have no NailedGridPosition
-            // -> Set `fromBoxIndex` and `toBoxIndex` in order to control which photos are added to the DOM
-            if (sectionBottom >= inDomMinY && layout.top <= inDomMaxY) {
-                // Show section in DOM
-                const section = sectionById[sectionId]
-
-                if (fromSectionIndex === null) {
-                    fromSectionIndex = sectionIndex
-                }
-
-                if (!layout.boxes) {
-                    // Section is not loaded yet, but will be shown in DOM -> Create dummy boxes
-                    const sectionBodyHeight = layout.height - sectionHeadHeight
-                    layout.boxes = createDummyLayoutBoxes(layout.width, sectionBodyHeight, gridRowHeight, section.count)
-                }
-
-                const prevFromBoxIndex = layout.fromBoxIndex
-                const prevToBoxIndex = layout.toBoxIndex
-                layout.fromBoxIndex = 0
-                layout.toBoxIndex = section.count
-                if (layout.top < inDomMinY || sectionBottom > inDomMaxY) {
-                    // This section is partly visible -> Go throw the boxes and find the correct boundaries
-                    const boxes = layout.boxes
-                    const boxCount = boxes.length
-
-                    let searchingStart = true
-                    for (let boxIndex = 0; boxIndex < boxCount; boxIndex++) {
-                        const box = boxes[boxIndex]
-                        const boxTop = layout.top + sectionHeadHeight + box.top
-                        const boxBottom = boxTop + box.height
-                        if (searchingStart) {
-                            if (boxBottom >= inDomMinY) {
-                                layout.fromBoxIndex = boxIndex
-                                searchingStart = false
-                            }
-                        } else if (boxTop > inDomMaxY) {
-                            layout.toBoxIndex = boxIndex
-                            break
-                        }
-                    }
-                }
-                if (layout.fromBoxIndex !== prevFromBoxIndex || layout.toBoxIndex !== prevToBoxIndex) {
+                // Layout the row before
+                const hasChange = layoutSectionRow(y, rowStartSectionIndex, sectionIndex - 1, sectionLayouts, viewportWidth)
+                if (hasChange) {
                     sectionsChanged = true
                 }
-            } else {
-                // Remove section from DOM
-                if (toSectionIndex === null && fromSectionIndex !== null) {
-                    // This is the first section to remove from DOM -> Remember its index
-                    toSectionIndex = sectionIndex
-                }
-                if (layout.boxes) {
-                    // This section is fully invisible -> Keep the layout but add no photos to the DOM
-                    layout.fromBoxIndex = undefined
-                    layout.toBoxIndex = undefined
-                }
+
+                // Start a new row
+                const prevLayout = sectionLayouts[sectionIndex - 1]
+                x = 0
+                y += prevLayout.height
+                rowStartSectionIndex = sectionIndex
+            }
+
+            // Prepare next iteration
+            x += originalLayout.width + sectionSpacingX
+        }
+
+        // Layout the last row
+        const hasChange = layoutSectionRow(y, rowStartSectionIndex, sectionCount - 1, sectionLayouts, viewportWidth)
+        if (hasChange) {
+            sectionsChanged = true
+        }
+
+        if (profiler) {
+            profiler.addPoint('Inter-section layout')
+        }
+
+        sectionRangeIndex = new VerticalRangeIndex(sectionLayouts)
+        loadedSectionIds = sectionIds.filter(id => isLoadedPhotoSection(sectionById[id]))
+    }
+
+    // Scrolling reuses section geometry and per-section box indices.
+    // Keep at least one row available for keyboard navigation in short windows.
+    const renderBuffer = Math.max(pagesToRender * viewportHeight,
+        gridRowHeight * (1 + targetRowHeightTolerance) + sectionHeadHeight + 2 * containerPadding)
+    const range = nailedGridPosition === null
+        ? sectionRangeIndex.find(scrollTop - renderBuffer, scrollTop + viewportHeight + renderBuffer)
+        : { from: Math.min(prevGridLayout.fromSectionIndex, sectionCount),
+            to: Math.min(prevGridLayout.toSectionIndex, sectionCount) }
+    const fromSectionIndex = range.from
+    const toSectionIndex = range.to
+
+    // Clear just the previously mounted sections that have left the window.
+    for (let i = prevGridLayout.fromSectionIndex; i < prevGridLayout.toSectionIndex; i++) {
+        if (i < fromSectionIndex || i >= toSectionIndex) {
+            const layout = sectionLayouts[i]
+            if (layout) {
+                layout.fromBoxIndex = undefined
+                layout.toBoxIndex = undefined
             }
         }
     }
 
-    if (toSectionIndex === null) {
-        toSectionIndex = sectionCount
+    for (let i = fromSectionIndex; i < toSectionIndex; i++) {
+        const layout = sectionLayouts[i]
+        const section = sectionById[sectionIds[i]]
+        if (nailedGridPosition !== null) {
+            const previous = sectionIds[i] === prevSectionIds[i] ? prevGridLayout.sectionLayouts[i] : null
+            if (layout.boxes && previous?.boxes && layout.boxes.length === previous.boxes.length) {
+                layout.fromBoxIndex = previous.fromBoxIndex
+                layout.toBoxIndex = previous.toBoxIndex
+            }
+            continue
+        }
+        if (!layout.boxes) {
+            layout.boxes = createDummyLayoutBoxes(layout.width, layout.height - sectionHeadHeight, gridRowHeight, section.count)
+        }
+        let boxIndex = boxRangeIndices.get(layout.boxes)
+        if (!boxIndex) {
+            boxIndex = new VerticalRangeIndex(layout.boxes)
+            boxRangeIndices.set(layout.boxes, boxIndex)
+        }
+        const bodyTop = layout.top + sectionHeadHeight
+        const visibleBoxes = boxIndex.find(scrollTop - renderBuffer - bodyTop,
+            scrollTop + viewportHeight + renderBuffer - bodyTop)
+        if (layout.fromBoxIndex !== visibleBoxes.from || layout.toBoxIndex !== visibleBoxes.to) {
+            sectionsChanged = true
+            layout.fromBoxIndex = visibleBoxes.from
+            layout.toBoxIndex = visibleBoxes.to
+        }
     }
 
     if (profiler) {
@@ -277,7 +252,7 @@ export function getGridLayoutWithoutStoreUpdate(sectionIds: PhotoSectionId[], se
     }
 
     let nextGridLayout: GridLayout
-    if (sectionsChanged
+    if (geometryChanged || sectionsChanged
         || fromSectionIndex !== prevGridLayout.fromSectionIndex
         || toSectionIndex !== prevGridLayout.toSectionIndex)
     {
@@ -294,6 +269,7 @@ export function getGridLayoutWithoutStoreUpdate(sectionIds: PhotoSectionId[], se
     prevSectionById = sectionById
     prevGridLayout = nextGridLayout
     if (nailedGridPosition === null) {
+        if (scrollTop !== prevScrollTop) prevScrollingDown = scrollTop > prevScrollTop
         prevScrollTop = scrollTop
     }
     prevViewportWidth = viewportWidth
@@ -314,11 +290,12 @@ export function getGridLayoutAndUpdateStore(sectionIds: PhotoSectionId[], sectio
     nailedGridPosition: NailedGridPosition | null):
     GridLayout
 {
+    const isScrollingDown = scrollTop === prevScrollTop ? prevScrollingDown : scrollTop > prevScrollTop
     const gridLayout = getGridLayoutWithoutStoreUpdate(sectionIds, sectionById, scrollTop, viewportWidth, viewportHeight, gridRowHeight,
         nailedGridPosition)
 
     if (nailedGridPosition === null) {
-        forgetAndFetchSections(sectionIds, sectionById, scrollTop, viewportHeight, gridLayout.sectionLayouts)
+        forgetAndFetchSections(sectionIds, sectionById, scrollTop, viewportHeight, isScrollingDown)
     }
 
     return gridLayout
@@ -507,40 +484,36 @@ export function createDummyLayoutBoxes(sectionBodyWidth: number, sectionBodyHeig
 
 /** Determines which sections we have to load or forget */
 function forgetAndFetchSections(sectionIds: PhotoSectionId[], sectionById: PhotoSectionById,
-    viewportTop: number, viewportHeight: number, sectionLayouts: GridSectionLayout[])
+    viewportTop: number, viewportHeight: number, isScrollingDown: boolean)
 {
     let sectionIdsToForget: { [index: string]: true } | null = null
     let sectionIdsToLoad: PhotoSectionId[] | null = null
 
-    const isScrollingDown = (viewportTop >= prevScrollTop)
     const keepMinY = viewportTop - pagesToKeep * viewportHeight
     const keepMaxY = viewportTop + (pagesToKeep + 1) * viewportHeight
-    const preloadMinY = viewportTop - (isScrollingDown ? 0 : pagesToPreload) * viewportHeight
-    const preloadMaxY = viewportTop + ((isScrollingDown ? pagesToPreload : 0) + 1) * viewportHeight
+    const renderBuffer = Math.max(pagesToRender * viewportHeight,
+        prevGridRowHeight * (1 + targetRowHeightTolerance) + sectionHeadHeight + 2 * containerPadding)
+    const preloadAhead = Math.max(pagesToPreload * viewportHeight, renderBuffer)
+    const preloadMinY = viewportTop - (isScrollingDown ? renderBuffer : preloadAhead)
+    const preloadMaxY = viewportTop + viewportHeight + (isScrollingDown ? preloadAhead : renderBuffer)
 
-    for (let sectionIndex = 0, sectionCount = sectionIds.length; sectionIndex < sectionCount; sectionIndex++) {
-        const sectionId = sectionIds[sectionIndex]
-        const section = sectionById[sectionId]
-        const layout = sectionLayouts[sectionIndex]
+    // Retained data is bounded by the keep window, except explicitly protected selections.
+    const keepRange = sectionRangeIndex.find(keepMinY, keepMaxY)
+    const keptIds = new Set(sectionIds.slice(keepRange.from, keepRange.to))
+    for (const sectionId of loadedSectionIds) {
+        if (!keptIds.has(sectionId) && !isProtectedSection(sectionId)) {
+            if (!sectionIdsToForget) sectionIdsToForget = {}
+            sectionIdsToForget[sectionId] = true
+        }
+    }
 
-        const sectionTop = layout.top
-        const sectionBottom = sectionTop + layout.height
-        if (isLoadedPhotoSection(section)) {
-            const keepSection = sectionBottom > keepMinY && sectionTop < keepMaxY
-            if (!keepSection && !isProtectedSection(sectionId)) {
-                if (!sectionIdsToForget) {
-                    sectionIdsToForget = {}
-                }
-                sectionIdsToForget[sectionId] = true
-            }
-        } else if (!isFetchingSectionPhotos) {
-            const loadSection = sectionBottom > preloadMinY && sectionTop < preloadMaxY
-            if (loadSection) {
-                if (!sectionIdsToLoad) {
-                    sectionIdsToLoad = [ sectionId ]
-                } else {
-                    sectionIdsToLoad.push(sectionId)
-                }
+    if (!isFetchingSectionPhotos) {
+        const preloadRange = sectionRangeIndex.find(preloadMinY, preloadMaxY)
+        for (let i = preloadRange.from; i < preloadRange.to; i++) {
+            const sectionId = sectionIds[i]
+            if (!isLoadedPhotoSection(sectionById[sectionId])) {
+                if (!sectionIdsToLoad) sectionIdsToLoad = []
+                sectionIdsToLoad.push(sectionId)
             }
         }
     }

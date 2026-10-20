@@ -37,7 +37,10 @@ export interface Props {
 }
 
 interface State {
-    prevGridLayout: GridLayout | null
+    prevSectionLayouts: GridSectionLayout[] | null
+    prevSectionIds: PhotoSectionId[] | null
+    prevSectionById: PhotoSectionById | null
+    prevContentHeight: number
     prevViewportHeight: number
     isMouseInside: boolean
     isDragging: boolean
@@ -50,7 +53,10 @@ export default class GridScrollBar extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props)
         this.state = {
-            prevGridLayout: null,
+            prevSectionLayouts: null,
+            prevSectionIds: null,
+            prevSectionById: null,
+            prevContentHeight: 0,
             prevViewportHeight: 0,
             isMouseInside: false,
             isDragging: false,
@@ -68,11 +74,16 @@ export default class GridScrollBar extends React.Component<Props, State> {
     }
 
     static getDerivedStateFromProps(nextProps: Props, prevState: State): Partial<State> | null {
-        if (nextProps.gridLayout !== prevState.prevGridLayout || nextProps.viewportHeight !== prevState.prevViewportHeight) {
+        if (nextProps.gridLayout.sectionLayouts !== prevState.prevSectionLayouts ||
+            nextProps.sectionIds !== prevState.prevSectionIds || nextProps.sectionById !== prevState.prevSectionById ||
+            nextProps.contentHeight !== prevState.prevContentHeight || nextProps.viewportHeight !== prevState.prevViewportHeight) {
             const scaleItems = generateScaleItems(nextProps.gridLayout.sectionLayouts, nextProps.sectionIds,
                 nextProps.sectionById, nextProps.viewportHeight, nextProps.contentHeight)
             return {
-                prevGridLayout: nextProps.gridLayout,
+                prevSectionLayouts: nextProps.gridLayout.sectionLayouts,
+                prevSectionIds: nextProps.sectionIds,
+                prevSectionById: nextProps.sectionById,
+                prevContentHeight: nextProps.contentHeight,
                 prevViewportHeight: nextProps.viewportHeight,
                 scaleItems
             }

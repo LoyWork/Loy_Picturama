@@ -1,7 +1,7 @@
 import classnames from 'classnames'
 import React from 'react'
 import { Button, ButtonGroup, MaybeElement } from '@blueprintjs/core'
-import { FaArrowLeft, FaArrowRight, FaChevronLeft, FaCrop } from 'react-icons/fa'
+import { FiChevronLeft, FiChevronRight, FiCrop } from 'react-icons/fi'
 
 import { Command, getCommandButtonProps, CommandGroupId, addCommandGroup, setCommandGroupEnabled, removeCommandGroup } from 'app/controller/HotkeyController'
 import { msg } from 'app/i18n/i18n'
@@ -11,6 +11,7 @@ import { canZoomPhoto, getZoomSliderValue, getSliderPhotoPosition } from 'app/ut
 import { bindMany } from 'app/util/LangUtil'
 
 import ViewModeOverlay from './ViewModeOverlay'
+import 'app/ui/widget/PhotoControl.less'
 
 
 export interface Props {
@@ -93,16 +94,16 @@ export default class ViewModeLayer extends React.Component<Props> {
                     isLeft={true}
                     isRight={props.isTopBarRight}
                 >
-                    <Button {...getCommandButtonProps(commands.close)}>
-                        <FaChevronLeft/>
+                    <Button className='PhotoControl PhotoDetailPane-backButton' minimal {...getCommandButtonProps(commands.close)}>
+                        <FiChevronLeft aria-hidden='true'/>
                         <span>{commands.close.label}</span>
                     </Button>
                     <ButtonGroup>
-                        <Button minimal={true} {...getCommandButtonProps(commands.prevPhoto)}>
-                            <FaArrowLeft/>
+                        <Button className='PhotoControl' minimal={true} {...getCommandButtonProps(commands.prevPhoto)}>
+                            <FiChevronLeft aria-hidden='true'/>
                         </Button>
-                        <Button minimal={true} {...getCommandButtonProps(commands.nextPhoto)}>
-                            <FaArrowRight/>
+                        <Button className='PhotoControl' minimal={true} {...getCommandButtonProps(commands.nextPhoto)}>
+                            <FiChevronRight aria-hidden='true'/>
                         </Button>
                     </ButtonGroup>
                     <Toolbar.Spacer isTopBar/>
@@ -129,7 +130,7 @@ export default class ViewModeLayer extends React.Component<Props> {
                     </div>
                     <div className='PhotoDetailPane-photoActions'>
                         <Button minimal={true} aria-label={commands.edit.label} {...getCommandButtonProps(commands.edit)}>
-                            <FaCrop/>
+                            <FiCrop aria-hidden='true'/>
                             <span className='PhotoDetailPane-editLabel'>{msg('PhotoDetailPane_edit')}</span>
                         </Button>
                         {props.bottomBarActions}

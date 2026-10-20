@@ -21,11 +21,19 @@
         width: 34px;
         height: 36px;
         padding: 0;
-        border-radius: 4px;
-        color: @blue-grey-300;
+        margin: 0;
+        position: relative;
 
-        &.bp3-active { background: @glassHighlight; color: @white; }
-        &:focus-visible { outline: 2px solid @teal-300; outline-offset: -2px; }
+        &.bp3-active::before {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 12px;
+            bottom: 12px;
+            width: 2px;
+            border-radius: 1px;
+            background: @white;
+        }
     }
 }
 .PhotoToolsToolbar-spacer { flex: 1; }

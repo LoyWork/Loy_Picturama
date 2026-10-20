@@ -42,7 +42,7 @@ export default class PhotoCanvas {
     private develop: DevelopSettings | null = null
 
 
-    constructor() {
+    constructor(private clearColor: readonly [number, number, number, number] = [0, 0, 0, 1]) {
         this.webGlCanvas = new WebGLCanvas()
         const gl = this.webGlCanvas.gl
 
@@ -158,7 +158,7 @@ export default class PhotoCanvas {
 
         if (!baseTexture) {
             const gl = this.webGlCanvas.gl
-            gl.clearColor(0.0, 0.0, 0.0, 1.0)
+            gl.clearColor(...this.clearColor)
             gl.clear(gl.COLOR_BUFFER_BIT)
 
             return this
@@ -188,10 +188,9 @@ export default class PhotoCanvas {
         const gl = this.webGlCanvas.gl
 
         // Clear the canvas before we start drawing on it.
-        // TODO: Make clear color configurable
         gl.viewport(0, 0, size.width, size.height)
         gl.disable(gl.SCISSOR_TEST)
-        gl.clearColor(0.0, 0.0, 0.0, 1.0)
+        gl.clearColor(...this.clearColor)
         gl.clear(gl.COLOR_BUFFER_BIT)
 
         if (clipRect) {

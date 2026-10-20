@@ -57,7 +57,8 @@ export default class PhotoLayer extends React.Component<Props> {
     }
 
     componentDidMount() {
-        this.canvas = new PhotoCanvas()
+        // Let the shared photo surface show around the image; exports keep their opaque default.
+        this.canvas = new PhotoCanvas([0, 0, 0, 0])
         const canvasElem = this.canvas.getElement()
         canvasElem.className = 'PhotoLayer-canvas'
         canvasElem.style.display = 'none'

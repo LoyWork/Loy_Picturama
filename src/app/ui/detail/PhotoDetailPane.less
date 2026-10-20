@@ -34,6 +34,11 @@
         padding-right: @windowsButtonsWidth + 12px;
     }
 }
+.PhotoDetailPane-topBar .PhotoDetailPane-backButton {
+    gap: 6px;
+    padding: 0 10px;
+    font-size: 13px;
+}
 .PhotoDetailPane-zoomPane {
     display: flex;
     align-items: center;
@@ -173,8 +178,8 @@
 }
 .PhotoDetailPane-body.PhotoLayer {
     // This class is also used by the sizer and interaction overlay. Only the canvas layer
-    // paints black; an opaque overlay would cover the rendered photo.
-    background: black;
+    // paints the shared photo background; an opaque overlay would cover the rendered photo.
+    background: @photoSurfaceBg;
 }
 
 // The detail top bar floats over the photo canvas: give it dark glass so the photo shows through
