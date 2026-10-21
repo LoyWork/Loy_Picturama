@@ -1,3 +1,5 @@
+**English** | [简体中文](README.zh-CN.md)
+
 # Picturama (Loy fork)
 
 Digital image organizer powered by the web
