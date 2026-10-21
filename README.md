@@ -11,6 +11,23 @@ Digital image organizer powered by the web
 Grab the latest Windows installer from the
 [Releases](https://github.com/LoyWork/Loy_Picturama/releases) page of this repository.
 
+## Screenshots
+
+### Organize and browse your photo library
+
+Browse photos in a thumbnail grid grouped by date, navigate folders in the sidebar,
+and quickly access favorites or the trash.
+
+![Photo library with date-grouped thumbnails, folder navigation, favorites and trash](doc/screenshots/photo-library.png)
+
+### View and adjust your photos
+
+View photos at full size and fine-tune exposure, contrast, highlights, shadows,
+white balance, vibrance and saturation with a live RGB histogram. The adjustment
+panel also includes Color Mixer, Color Grading and Effects sections.
+
+![Photo detail view with RGB histogram and light and color adjustment controls](doc/screenshots/photo-adjustments.png)
+
 ## Features
 
 Everything from the original Picturama:
@@ -29,6 +46,8 @@ Everything from the original Picturama:
 
 Plus what this fork adds:
 
+- Photo adjustments - Fine-tune light and color with an RGB histogram, plus Color Mixer,
+  Color Grading and Effects controls
 - Folder sidebar - Browse the top-level folders of your photo directories and filter the library by folder
 - Unified filter sidebar - Photo views (all / favorites / trash), tags and folders in one place
 - Photo context menu - Copy image to clipboard, delete from library, delete from disk (moves to the
